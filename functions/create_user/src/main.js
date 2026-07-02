@@ -113,6 +113,8 @@ module.exports = async function (context) {
     correo,
     rol,
     primer_login: true,
+    password_changed: false,
+    email_verified: false,
     creado_por: callerId,
   };
   if (recintoId) {

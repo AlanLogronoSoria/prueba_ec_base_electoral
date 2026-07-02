@@ -34,8 +34,8 @@ class AppwriteClient {
       );
       final status = exec.status?.toString() ?? '';
       if (status == 'completed') return;
-      if (status == 'failed') throw Exception('La funcion fallo');
+      if (status == 'failed') throw AppwriteException('La funcion fallo');
     }
-    throw Exception('Timeout esperando la funcion');
+    throw AppwriteException('Timeout esperando la funcion');
   }
 }

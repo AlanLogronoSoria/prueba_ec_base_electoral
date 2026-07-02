@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme/app_theme.dart';
+import 'sync_worker.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/recovery_bloc.dart';
 import 'features/coordinador_provincial/presentation/bloc/provincial_bloc.dart';
@@ -19,6 +20,7 @@ void main() async {
   await dotenv.load(fileName: '.env');
   await Hive.initFlutter();
   await di.init();
+  await registerBackgroundSync();
   runApp(const ControlElectoralApp());
 }
 

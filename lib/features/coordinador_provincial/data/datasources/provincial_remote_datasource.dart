@@ -5,6 +5,7 @@ import '../../../../core/appwrite/appwrite_client.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/utils/retry_helper.dart';
 import '../../../../features/veedor/data/models/acta_model.dart';
 import '../../../../features/veedor/domain/entities/acta.dart';
 import '../../domain/entities/detalle_acta_completo.dart';
@@ -166,17 +167,27 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
         throw ServerException('Función de creación de usuarios no configurada');
       }
 
-      final execution = await functions.createExecution(
-        functionId: functionId,
-        body: jsonEncode({
-          'cedula': cedula,
-          'nombres': nombres,
-          'apellidos': apellidos,
-          'telefono': telefono,
-          'correo': correo,
-          'rol': 'coordinador_recinto',
-          'recintoId': recintoId,
-        }),
+      final execution = await retryWithBackoffAndCheck(
+        action: () => functions.createExecution(
+          functionId: functionId,
+          body: jsonEncode({
+            'cedula': cedula,
+            'nombres': nombres,
+            'apellidos': apellidos,
+            'telefono': telefono,
+            'correo': correo,
+            'rol': 'coordinador_recinto',
+            'recintoId': recintoId,
+          }),
+        ),
+        alreadyDone: () async {
+          final check = await databases.listDocuments(
+            databaseId: AppwriteConstants.databaseId,
+            collectionId: AppwriteConstants.usuariosCollectionId,
+            queries: [Query.equal('cedula', cedula)],
+          );
+          return check.documents.isNotEmpty;
+        },
       );
 
       debugPrint('[DS:prov] Execution ID: ${execution.$id}');

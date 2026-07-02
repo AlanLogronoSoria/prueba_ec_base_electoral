@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/text_sanitizer.dart';
 import '../entities/recinto.dart';
 import '../repositories/provincial_repository.dart';
 
@@ -14,9 +15,9 @@ class CreateRecintoUseCase
   @override
   Future<Either<Failure, Recinto>> call(CreateRecintoParams params) {
     return repository.createRecinto(
-      params.canton,
-      params.parroquia,
-      params.nombre,
+      TextSanitizer.sanitize(params.canton),
+      TextSanitizer.sanitize(params.parroquia),
+      TextSanitizer.sanitize(params.nombre),
       params.numeroJrv,
     );
   }

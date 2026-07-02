@@ -161,6 +161,25 @@ class VeedorDashboardPage extends StatelessWidget {
                           ),
                         );
                       }
+                      if (syncState is SyncPartialError) {
+                        return AppCard(
+                          backgroundColor: AppColors.warningLight,
+                          child: ListTile(
+                            leading: const Icon(Icons.sync_problem_rounded, color: AppColors.warning),
+                            title: Text(
+                              '${syncState.pendientes} pendiente(s) — ${syncState.errores} error(es)',
+                              style: AppTypography.labelMedium,
+                            ),
+                            subtitle: Text(syncState.motivo, style: AppTypography.caption),
+                            trailing: syncState.pendientes > 0
+                                ? TextButton(
+                                    onPressed: () => context.read<SyncBloc>().add(const StartSync()),
+                                    child: const Text('Reintentar'),
+                                  )
+                                : null,
+                          ),
+                        );
+                      }
                       return const SizedBox.shrink();
                     },
                   ),

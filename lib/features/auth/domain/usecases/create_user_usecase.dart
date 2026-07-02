@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/text_sanitizer.dart';
 import '../entities/usuario.dart';
 import '../repositories/auth_repository.dart';
 
@@ -12,7 +13,16 @@ class CreateUserUseCase implements UseCase<Usuario, CreateUserParams> {
 
   @override
   Future<Either<Failure, Usuario>> call(CreateUserParams params) {
-    return repository.createUser(params);
+    return repository.createUser(CreateUserParams(
+      cedula: params.cedula,
+      nombres: TextSanitizer.sanitize(params.nombres),
+      apellidos: TextSanitizer.sanitize(params.apellidos),
+      telefono: TextSanitizer.sanitize(params.telefono),
+      correo: TextSanitizer.sanitize(params.correo),
+      rol: params.rol,
+      creadoPor: params.creadoPor,
+      recintoId: params.recintoId,
+    ));
   }
 }
 

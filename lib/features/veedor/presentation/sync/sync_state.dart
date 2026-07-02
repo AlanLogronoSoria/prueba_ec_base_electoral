@@ -78,3 +78,20 @@ class SyncError extends SyncState {
   @override
   List<Object?> get props => [message];
 }
+
+class SyncPartialError extends SyncState {
+  final int pendientes;
+  final int conflictos;
+  final int errores;
+  final String motivo;
+
+  const SyncPartialError({
+    required this.pendientes,
+    required this.conflictos,
+    required this.errores,
+    required this.motivo,
+  });
+
+  @override
+  List<Object?> get props => [pendientes, conflictos, errores, motivo];
+}

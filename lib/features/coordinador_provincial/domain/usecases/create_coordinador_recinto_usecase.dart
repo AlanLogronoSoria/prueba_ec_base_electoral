@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/text_sanitizer.dart';
 import '../repositories/provincial_repository.dart';
 
 class CreateCoordinadorRecintoUseCase
@@ -17,10 +18,10 @@ class CreateCoordinadorRecintoUseCase
     return repository.createCoordinadorRecinto(
       params.recintoId,
       params.cedula,
-      params.nombres,
-      params.apellidos,
-      params.telefono,
-      params.correo,
+      TextSanitizer.sanitize(params.nombres),
+      TextSanitizer.sanitize(params.apellidos),
+      TextSanitizer.sanitize(params.telefono),
+      TextSanitizer.sanitize(params.correo),
       params.creadoPor,
     );
   }

@@ -5,6 +5,7 @@ import '../../../../core/appwrite/appwrite_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/utils/retry_helper.dart';
 import '../models/usuario_model.dart';
 
 abstract class AuthRemoteDatasource {
@@ -190,9 +191,19 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
       debugPrint('[DS:auth] Payload: ${jsonEncode(body)}');
 
-      final execution = await functions.createExecution(
-        functionId: functionId,
-        body: jsonEncode(body),
+      final execution = await retryWithBackoffAndCheck(
+        action: () => functions.createExecution(
+          functionId: functionId,
+          body: jsonEncode(body),
+        ),
+        alreadyDone: () async {
+          final check = await databases.listDocuments(
+            databaseId: AppwriteConstants.databaseId,
+            collectionId: AppwriteConstants.usuariosCollectionId,
+            queries: [Query.equal('cedula', cedula)],
+          );
+          return check.documents.isNotEmpty;
+        },
       );
 
       debugPrint('[DS:auth] Execution ID: ${execution.$id}');

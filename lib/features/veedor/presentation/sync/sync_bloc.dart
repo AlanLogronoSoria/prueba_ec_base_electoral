@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:bloc/bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../../../core/sync/sync_service.dart';
+import '../../../../sync_worker.dart';
 import '../../data/datasources/veedor_local_datasource.dart';
 import '../../data/datasources/veedor_remote_datasource.dart';
 import 'sync_event.dart';
@@ -36,11 +39,15 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         try {
           final c = !results.contains(ConnectivityResult.none);
           add(ConnectivityChanged(isConnected: c));
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[SYNC] Error leyendo cambio de conectividad: $e');
+          add(ConnectivityChanged(isConnected: false));
+        }
       });
 
       add(ConnectivityChanged(isConnected: connected));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[SYNC] Error verificando conectividad inicial: $e');
       add(ConnectivityChanged(isConnected: false));
     }
   }
@@ -59,6 +66,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
 
     if (event.isConnected && _sinConexionPrevia && pendientes > 0) {
       add(const SyncNext());
+      triggerOneTimeSync();
     }
     _sinConexionPrevia = !event.isConnected;
   }
@@ -79,136 +87,38 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
 
     if (total == 0) {
       final conflictos = await localDatasource.contarConflictos();
-      emit(SyncCompletado(
-        sincronizados: 0,
-        conflictos: conflictos,
-        errores: 0,
-      ));
+      emit(SyncCompletado(sincronizados: 0, conflictos: conflictos, errores: 0));
       return;
     }
 
-    int procesados = 0;
-    int errores = 0;
+    final result = await SyncService.sincronizarPendientes(
+      local: localDatasource,
+      remote: remoteDatasource,
+      onProgress: (t, p) => emit(SyncInProgress(total: t, procesados: p)),
+    );
 
-    for (final pendiente in pendientes) {
-      emit(SyncInProgress(total: total, procesados: procesados));
-
-      try {
-        // --- CONFLICT RESOLUTION STRATEGY ---
-        // For new actas (actaId == null): no remote record exists, so no conflict.
-        // Push directly.
-        //
-        // For corrections (actaId != null): fetch the remote updated_at.
-        // - If remote has a newer updated_at than local createdAt: conflict.
-        //   The local changes might overwrite newer data. Mark as conflicto
-        //   and let the user decide.
-        // - If local has the same or newer timestamp: safe to overwrite
-        //   (last-write-wins, optimistic concurrency).
-        //
-        // This strategy is "last-write-wins with conflict detection":
-        // - Prevents silent data loss from stale offline edits
-        // - User intervention required only when remote was modified while
-        //   offline changes were pending
-        // - For new actas, there is no stale data to conflict with
-        if (pendiente.actaId != null) {
-          try {
-            final remoteActa = await remoteDatasource.getActaPorId(
-              pendiente.actaId!,
-            );
-
-            final remoteUpdated =
-                DateTime.parse(remoteActa['updated_at'] ?? remoteActa['\$updatedAt'] ?? '');
-            final localCreated = pendiente.createdAt;
-
-            if (remoteUpdated.isAfter(localCreated)) {
-              // Remote is newer → conflict, local changes may overwrite new data
-              await localDatasource.actualizarEstado(
-                pendiente.localId,
-                syncStatus: 'conflicto',
-                conflictoDetalle:
-                    'El acta fue modificada remotamente el ${remoteUpdated.toLocal()}. '
-                    'Tus cambios locales son del ${localCreated.toLocal()}. '
-                    'Decide si descartar tus cambios locales o sobrescribir.',
-              );
-              emit(ConflictoDetectado(
-                pendiente: pendiente,
-                remoteUpdatedAt: remoteUpdated.toIso8601String(),
-                remoteData: remoteActa,
-              ));
-              continue;
-            }
-          } catch (e) {
-            // Cannot fetch remote → network issue, skip and try later
-            continue;
-          }
-        }
-
-        // Push to Appwrite
-        String? actaIdResult = pendiente.actaId;
-        String? fotoUrlResult = pendiente.fotoUrl;
-
-        if (actaIdResult == null) {
-          // Create acta document + votos in one call
-          final nuevaActa = await remoteDatasource.registrarActa(
-            pendiente.mesaId,
-            pendiente.dignidad,
-            pendiente.totalSufragantes,
-            pendiente.votosNulos,
-            pendiente.votosBlancos,
-            pendiente.gpsLatitud,
-            pendiente.gpsLongitud,
-            pendiente.registradoPor,
-            pendiente.votosPorOrganizacion,
-          );
-
-          actaIdResult = nuevaActa.id;
-
-          // Upload foto if available locally
-          if (pendiente.fotoLocalPath != null) {
-            try {
-              fotoUrlResult = await remoteDatasource.subirFotoActa(
-                pendiente.fotoLocalPath!,
-                actaIdResult,
-              );
-            } catch (_) {
-              // Foto upload failure is non-fatal
-            }
-          }
-        }
-
-        await localDatasource.actualizarEstado(
-          pendiente.localId,
-          actaId: actaIdResult,
-          fotoUrl: fotoUrlResult,
-          syncStatus: 'sincronizado',
-          lastSyncedAt: DateTime.now(),
-        );
-
-        procesados++;
-      } catch (e) {
-        errores++;
-        await localDatasource.actualizarEstado(
-          pendiente.localId,
-          syncStatus: 'pendiente',
-          conflictoDetalle: 'Error: $e',
-        );
-      }
-    }
-
-    final conflictosFinal = await localDatasource.contarConflictos();
     emit(SyncCompletado(
-      sincronizados: procesados,
-      conflictos: conflictosFinal,
-      errores: errores,
+      sincronizados: result.sincronizados,
+      conflictos: result.conflictos,
+      errores: result.errores,
     ));
 
     final pendientesFinal = await localDatasource.contarPendientes();
+    final conflictosFinal = await localDatasource.contarConflictos();
     if (pendientesFinal == 0 && conflictosFinal == 0) {
       final conectado = await connectivity.checkConnectivity();
       emit(SyncIdle(
         isConnected: conectado.contains(ConnectivityResult.none),
         pendientesCount: 0,
         conflictosCount: 0,
+      ));
+    } else if (result.errores > 0) {
+      emit(SyncPartialError(
+        pendientes: pendientesFinal,
+        conflictos: conflictosFinal,
+        errores: result.errores,
+        motivo: '${result.errores} actas no pudieron sincronizarse. '
+            'Verifica tu conexión e intenta de nuevo.',
       ));
     }
   }
@@ -227,7 +137,9 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
       if (pendiente != null && pendiente.actaId != null) {
         try {
           await remoteDatasource.eliminarActa(pendiente.actaId!);
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[SYNC] Error eliminando acta remota ${pendiente.actaId}: $e');
+        }
         await localDatasource.actualizarEstado(
           event.localId,
           actaId: null,

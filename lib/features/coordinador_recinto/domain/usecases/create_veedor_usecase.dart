@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/text_sanitizer.dart';
 import '../repositories/recinto_repository.dart';
 
 class CreateVeedorUseCase implements UseCase<String, CreateVeedorParams> {
@@ -15,10 +16,10 @@ class CreateVeedorUseCase implements UseCase<String, CreateVeedorParams> {
     debugPrint('[UC:veedor] cedula=${params.cedula} mesaId=${params.mesaId}');
     return repository.createVeedor(
       params.cedula,
-      params.nombres,
-      params.apellidos,
-      params.telefono,
-      params.correo,
+      TextSanitizer.sanitize(params.nombres),
+      TextSanitizer.sanitize(params.apellidos),
+      TextSanitizer.sanitize(params.telefono),
+      TextSanitizer.sanitize(params.correo),
       params.creadoPor,
       params.mesaId,
     );

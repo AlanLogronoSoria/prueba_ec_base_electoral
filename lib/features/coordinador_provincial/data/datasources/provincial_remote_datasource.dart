@@ -478,8 +478,8 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
       // required attribute" que tuviste con 'numero_jrv'.
       votosBlancos: data['votos_blancos'] as int,
       fotoUrl: data['foto_url'] as String?,
-      gpsLatitud: (data['gps_lat'] as num?)?.toDouble(),
-      gpsLongitud: (data['gps_lng'] as num?)?.toDouble(),
+      gpsLatitud: (data['gps_latitud'] as num?)?.toDouble(),
+      gpsLongitud: (data['gps_longitud'] as num?)?.toDouble(),
       registradoPor: data['created_by'] as String,
       estado: data['estado'] as String? ?? 'pendiente',
       updatedAt: data['updated_at'] != null

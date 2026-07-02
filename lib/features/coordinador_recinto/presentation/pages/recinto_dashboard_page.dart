@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,10 +21,22 @@ class RecintoDashboardPage extends StatefulWidget {
   State<RecintoDashboardPage> createState() => _RecintoDashboardPageState();
 }
 
-class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
+class _RecintoDashboardPageState extends State<RecintoDashboardPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnim;
+
   @override
   void initState() {
     super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnim =
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _animController.forward();
+
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final recintoId = authState.usuario.recintoId;
@@ -31,6 +44,12 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
         context.read<RecintoBloc>().add(LoadAvance(recintoId: recintoId));
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,148 +71,368 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
           if (authState is AuthAuthenticated) {
             final usuario = authState.usuario;
             final recintoId = usuario.recintoId;
-            return RefreshIndicator(
-              onRefresh: () async {
-                if (recintoId != null) {
-                  context.read<RecintoBloc>().add(LoadAvance(recintoId: recintoId));
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppCard(
-                      backgroundColor: AppColors.primary,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(30),
-                              borderRadius: BorderRadius.circular(16),
+            return FadeTransition(
+              opacity: _fadeAnim,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  if (recintoId != null) {
+                    context
+                        .read<RecintoBloc>()
+                        .add(LoadAvance(recintoId: recintoId));
+                  }
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeroHeader(usuario.nombreCompleto),
+                      const SizedBox(height: 20),
+                      _buildSectionHeader('Estadisticas'),
+                      const SizedBox(height: 8),
+                      _buildStatsSection(),
+                      const SizedBox(height: 28),
+                      _buildSectionHeader('Acciones'),
+                      const SizedBox(height: 10),
+                      _buildActionCard(
+                        icon: Icons.table_chart_rounded,
+                        label: 'Gestionar Mesas',
+                        subtitle: 'Ver y administrar las JRV del recinto',
+                        iconColor: AppColors.primary,
+                        onTap: () {
+                          if (recintoId == null) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<RecintoBloc>(),
+                                child: MesasListPage(recintoId: recintoId),
+                              ),
                             ),
-                            child: const Icon(Icons.person_rounded, size: 32, color: Colors.white),
-                          ),
-                          Text(
-                            usuario.nombreCompleto,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Coordinador de Recinto',
-                            style: TextStyle(fontSize: 13, color: Color(0xFFBFDBFE)),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    BlocBuilder<RecintoBloc, RecintoState>(
-                      builder: (context, state) {
-                        if (state is AvanceLoaded) {
-                          return AppCard(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(
-                              children: [
-                                StatCard(
-                                  label: 'Mesas',
-                                  value: '${state.totalMesas}',
-                                  icon: Icons.table_chart_rounded,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 12),
-                                StatCard(
-                                  label: 'Actas',
-                                  value: '${state.actasRegistradas}',
-                                  icon: Icons.description_rounded,
-                                  color: AppColors.success,
-                                ),
-                                const SizedBox(width: 12),
-                                StatCard(
-                                  label: 'Pendientes',
-                                  value: '${state.totalMesas - state.actasRegistradas}',
-                                  icon: Icons.pending_rounded,
-                                  color: AppColors.warning,
-                                ),
-                              ],
+                      const SizedBox(height: 8),
+                      _buildActionCard(
+                        icon: Icons.add_chart_rounded,
+                        label: 'Crear Mesa',
+                        subtitle: 'Agregar una nueva JRV al recinto',
+                        iconColor: AppColors.accent,
+                        onTap: () {
+                          if (recintoId == null) return;
+                          _showCrearMesaSheet(context, recintoId);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      _buildActionCard(
+                        icon: Icons.person_add_alt_rounded,
+                        label: 'Crear Veedor',
+                        subtitle: 'Registrar nuevo veedor y asignar a mesa',
+                        iconColor: AppColors.success,
+                        onTap: () {
+                          if (recintoId == null) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BlocProvider.value(
+                                value: context.read<RecintoBloc>(),
+                                child: CreateVeedorPage(recintoId: recintoId),
+                              ),
                             ),
                           );
-                        }
-                        if (state is RecintoLoading) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: LinearProgressIndicator(),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    Text('Acciones', style: AppTypography.labelMedium),
-                    const SizedBox(height: 8),
-                    DashboardCard(
-                      icon: Icons.table_chart_rounded,
-                      label: 'Gestionar Mesas',
-                      iconColor: AppColors.primary,
-                      onTap: () {
-                        if (recintoId == null) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider.value(
-                              value: context.read<RecintoBloc>(),
-                              child: MesasListPage(recintoId: recintoId),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    DashboardCard(
-                      icon: Icons.add_chart_rounded,
-                      label: 'Crear Mesa',
-                      subtitle: 'Agregar una nueva JRV al recinto',
-                      iconColor: AppColors.accent,
-                      onTap: () {
-                        if (recintoId == null) return;
-                        _showCrearMesaSheet(context, recintoId);
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    DashboardCard(
-                      icon: Icons.person_add_alt_rounded,
-                      label: 'Crear Veedor',
-                      iconColor: AppColors.success,
-                      onTap: () {
-                        if (recintoId == null) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => BlocProvider.value(
-                              value: context.read<RecintoBloc>(),
-                              child: CreateVeedorPage(recintoId: recintoId),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    DashboardCard(
-                      icon: Icons.search_rounded,
-                      label: 'Buscar Mesa por JRV',
-                      iconColor: AppColors.secondary,
-                      onTap: () {
-                        if (recintoId == null) return;
-                        _showBuscarMesaDialog(context, recintoId);
-                      },
-                    ),
-                  ],
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      _buildActionCard(
+                        icon: Icons.search_rounded,
+                        label: 'Buscar Mesa por JRV',
+                        subtitle: 'Localizar una mesa especifica por numero',
+                        iconColor: AppColors.secondary,
+                        onTap: () {
+                          if (recintoId == null) return;
+                          _showBuscarMesaDialog(context, recintoId);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildHeroHeader(String nombre) {
+    return AppCard(
+      backgroundColor: AppColors.primary,
+      child: Row(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(25),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.location_city_rounded,
+              size: 36,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nombre,
+                  style: AppTypography.plusJakarta(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withAlpha(180),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'COORDINADOR DE RECINTO',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return BlocBuilder<RecintoBloc, RecintoState>(
+      builder: (context, state) {
+        if (state is AvanceLoaded) {
+          final pendientes = state.totalMesas - state.actasRegistradas;
+          final porcentaje = state.totalMesas > 0
+              ? (state.actasRegistradas / state.totalMesas * 100)
+                  .toStringAsFixed(0)
+              : '0';
+
+          return Column(
+            children: [
+              Row(
+                children: [
+                  StatCard(
+                    label: 'Mesas',
+                    value: '${state.totalMesas}',
+                    icon: Icons.table_chart_rounded,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  StatCard(
+                    label: 'Actas',
+                    value: '${state.actasRegistradas}',
+                    icon: Icons.description_rounded,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 12),
+                  StatCard(
+                    label: 'Pendientes',
+                    value: '$pendientes',
+                    icon: Icons.pending_rounded,
+                    color: AppColors.warning,
+                  ),
+                ],
+              ),
+              if (state.totalMesas > 0) ...[
+                const SizedBox(height: 16),
+                AppCard(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.pie_chart_rounded,
+                              size: 16, color: AppColors.primaryLight),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Avance: $porcentaje%',
+                            style: AppTypography.labelLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 160,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: PieChart(
+                                PieChartData(
+                                  centerSpaceRadius: 36,
+                                  sectionsSpace: 3,
+                                  sections: [
+                                    PieChartSectionData(
+                                      value:
+                                          state.actasRegistradas.toDouble(),
+                                      color: AppColors.success,
+                                      title:
+                                          '${state.actasRegistradas}',
+                                      radius: 40,
+                                      titleStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    if (pendientes > 0)
+                                      PieChartSectionData(
+                                        value: pendientes.toDouble(),
+                                        color: AppColors.warning,
+                                        title: '$pendientes',
+                                        radius: 40,
+                                        titleStyle: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLegend(
+                                    'Completadas', AppColors.success),
+                                const SizedBox(height: 8),
+                                _buildLegend(
+                                    'Pendientes', AppColors.warning),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryLight
+                                        .withAlpha(30),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '$porcentaje% completado',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryLight,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+        }
+        if (state is RecintoLoading) {
+          return const Padding(
+            padding: EdgeInsets.all(24),
+            child: LinearProgressIndicator(),
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildLegend(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: AppTypography.caption),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textTertiary,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return AppCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: iconColor.withAlpha(35),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: iconColor, size: 26),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTypography.labelLarge),
+                const SizedBox(height: 2),
+                Text(subtitle, style: AppTypography.caption),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded,
+              color: AppColors.textTertiary, size: 22),
+        ],
       ),
     );
   }
@@ -209,21 +448,28 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
           if (state is MesaCreada) {
             Navigator.pop(ctx);
             context.read<RecintoBloc>().add(LoadMesas(recintoId: recintoId));
-            context.read<RecintoBloc>().add(LoadAvance(recintoId: recintoId));
+            context
+                .read<RecintoBloc>()
+                .add(LoadAvance(recintoId: recintoId));
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Mesa creada exitosamente'), backgroundColor: AppColors.success),
+              const SnackBar(
+                  content: Text('Mesa creada exitosamente'),
+                  backgroundColor: AppColors.success),
             );
           }
           if (state is RecintoError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+              SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error),
             );
           }
         },
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.only(
             left: 24,
@@ -255,7 +501,8 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                       color: AppColors.accent.withAlpha(40),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.table_chart_rounded, color: AppColors.accent, size: 22),
+                    child: const Icon(Icons.table_chart_rounded,
+                        color: AppColors.accent, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Text('Nueva Mesa JRV', style: AppTypography.headingMedium),
@@ -268,7 +515,7 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                 autofocus: true,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: const InputDecoration(
-                  labelText: 'Número de JRV',
+                  labelText: 'Numero de JRV',
                   hintText: 'Ej: 4',
                   prefixIcon: Icon(Icons.pin_rounded, size: 20),
                 ),
@@ -283,13 +530,21 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                             final jrv = jrvController.text.trim();
                             if (jrv.isEmpty) return;
                             context.read<RecintoBloc>().add(
-                                  CrearMesa(recintoId: recintoId, numeroJrv: jrv),
+                                  CrearMesa(
+                                      recintoId: recintoId,
+                                      numeroJrv: jrv),
                                 );
                           },
                     icon: state is RecintoLoading
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.add_rounded, size: 20),
-                    label: Text(state is RecintoLoading ? 'Creando...' : 'Crear Mesa'),
+                    label: Text(state is RecintoLoading
+                        ? 'Creando...'
+                        : 'Crear Mesa'),
                   );
                 },
               ),
@@ -309,7 +564,7 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            labelText: 'Número de JRV',
+            labelText: 'Numero de JRV',
             border: OutlineInputBorder(),
           ),
         ),

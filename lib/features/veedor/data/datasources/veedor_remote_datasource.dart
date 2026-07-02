@@ -132,10 +132,10 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
           'total_sufragantes': totalSufragantes,
           'votos_nulos': votosNulos,
           'votos_blancos': votosBlancos,
-          'gps_lat': gpsLatitud,
-          'gps_lng': gpsLongitud,
+          'gps_latitud': gpsLatitud.toString(),
+          'gps_longitud': gpsLongitud.toString(),
           'created_by': registradoPor,
-          'estado': 'pendiente',
+          'estado': 'registrada',
         },
         permissions: [
           Permission.read(Role.user(registradoPor)),

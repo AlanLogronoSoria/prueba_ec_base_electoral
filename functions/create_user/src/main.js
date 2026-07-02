@@ -20,6 +20,7 @@ module.exports = async function (context) {
   const databaseId = process.env.APPWRITE_DATABASE_ID;
   const usuariosCollectionId = process.env.APPWRITE_USUARIOS_COLLECTION_ID;
   const defaultPassword = process.env.DEFAULT_PASSWORD || 'Ecuador2026';
+  const recoveryUrl = process.env.APPWRITE_RECOVERY_URL || 'controlelectoral://';
 
   const jwt = req.headers['x-appwrite-user-jwt'];
   log('[FN] JWT present: ' + !!jwt);
@@ -151,10 +152,10 @@ module.exports = async function (context) {
   }
 
   try {
-    await users.createVerification(userId);
-    log('[FN] Verification email sent');
-  } catch (_) {
-    log('[FN] Warning: no se pudo enviar verificacion');
+    await users.createVerification(userId, recoveryUrl + '/verify-email');
+    log('[FN] Verification email sent to ' + recoveryUrl + '/verify-email');
+  } catch (e) {
+    log('[FN] Warning: no se pudo enviar verificacion: ' + e.message);
   }
 
   log('[FN] === SUCCESS === userId=' + userId);

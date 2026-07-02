@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/cedula_validator.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -154,6 +155,9 @@ class _LoginPageState extends State<LoginPage> {
                                   }
                                   if (value.trim().length != 10) {
                                     return 'La cédula debe tener 10 dígitos';
+                                  }
+                                  if (!CedulaValidator.isValid(value.trim())) {
+                                    return 'Cédula inválida';
                                   }
                                   return null;
                                 },

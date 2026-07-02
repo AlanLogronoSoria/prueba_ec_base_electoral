@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class GpsHelper {
@@ -18,7 +19,8 @@ class GpsHelper {
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[GPS] Error obteniendo posicion: $e');
       return null;
     }
   }

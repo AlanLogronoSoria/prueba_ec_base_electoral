@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/gps_helper.dart';
@@ -105,31 +106,38 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
 
     final position = await GpsHelper.getCurrentPosition();
     if (position != null) {
+      if (position.latitude == 0.0 && position.longitude == 0.0) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('GPS no disponible — coordenadas invalidas (0, 0). '
+                  'Asegurate de estar al aire libre.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
       setState(() {
         _gpsObtained = true;
         _gpsLat = position.latitude;
         _gpsLng = position.longitude;
       });
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo obtener la ubicacion GPS. '
+                'Verifica que el GPS este activado y con senal.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   bool _validarActa() {
     final total = int.tryParse(_totalController.text) ?? 0;
-
-    for (final c in _orgControllers.values) {
-      final voto = int.tryParse(c.text) ?? 0;
-      if (voto > total) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'El voto de una organización ($voto) excede el total de sufragantes ($total)',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return false;
-      }
-    }
 
     final nulos = int.tryParse(_nulosController.text) ?? 0;
     final blancos = int.tryParse(_blancosController.text) ?? 0;
@@ -331,7 +339,16 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
                                 decoration: InputDecoration(
                                   labelText: '$nombre - $candidato',
                                 ),
-                                validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Requerido';
+                          final voto = int.tryParse(v.trim());
+                          if (voto == null) return 'Número inválido';
+                          final total = int.tryParse(_totalController.text) ?? 0;
+                          if (voto > total) {
+                            return 'No puede superar el total de sufragantes ($total)';
+                          }
+                          return null;
+                        },
                               ),
                             );
                           }),

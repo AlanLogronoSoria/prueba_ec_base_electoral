@@ -1,6 +1,8 @@
 class ServerException implements Exception {
   final String message;
-  const ServerException(this.message);
+  final int? code;
+  final String? type;
+  const ServerException(this.message, {this.code, this.type});
 }
 
 class AuthException implements Exception {

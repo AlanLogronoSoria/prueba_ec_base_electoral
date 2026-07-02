@@ -73,7 +73,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
       }
       return result;
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al obtener mesas del veedor');
+      debugPrint('[DS:veedor] getMesasVeedor APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al obtener mesas del veedor',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
@@ -159,14 +164,25 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
 
       return ActaModel.fromMap(doc.data, doc.$id);
     } on AppwriteException catch (e) {
-      debugPrint('[DS:veedor] APPWRITE ERROR: code=${e.code} message=${e.message}');
-      throw ServerException(e.message ?? 'Error al registrar acta');
+      debugPrint('[DS:veedor] registrarActa APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al registrar acta',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
   @override
   Future<String> subirFotoActa(String filePath, String actaId) async {
     try {
+      final actaDoc = await databases.getDocument(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.actasCollectionId,
+        documentId: actaId,
+      );
+      final createdBy = actaDoc.data['created_by'] as String? ?? '';
+
       final file = await storage.createFile(
         bucketId: AppwriteConstants.bucketId,
         fileId: ID.unique(),
@@ -174,6 +190,10 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
           path: filePath,
           filename: 'acta_$actaId.jpg',
         ),
+        permissions: [
+          Permission.read(Role.user(createdBy)),
+          Permission.update(Role.user(createdBy)),
+        ],
       );
 
       final fotoUrl = storage.getFileView(
@@ -190,7 +210,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
 
       return fotoUrl.toString();
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al subir foto');
+      debugPrint('[DS:veedor] subirFotoActa APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al subir foto',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
@@ -205,7 +230,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
           .map((doc) => {'id': doc.$id, ...doc.data})
           .toList();
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al obtener organizaciones');
+      debugPrint('[DS:veedor] getOrganizaciones APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al obtener organizaciones',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
@@ -251,7 +281,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
         }
       }
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al corregir acta');
+      debugPrint('[DS:veedor] corregirActaVeedor APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al corregir acta',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
@@ -265,7 +300,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
       );
       return {'id': doc.$id, ...doc.data};
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al obtener acta');
+      debugPrint('[DS:veedor] getActaPorId APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al obtener acta',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 
@@ -278,7 +318,12 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
         documentId: actaId,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(e.message ?? 'Error al eliminar acta');
+      debugPrint('[DS:veedor] eliminarActa APPWRITE ERROR: code=${e.code} type=${e.type} message=${e.message}');
+      throw ServerException(
+        e.message ?? 'Error al eliminar acta',
+        code: e.code,
+        type: e.type,
+      );
     }
   }
 }

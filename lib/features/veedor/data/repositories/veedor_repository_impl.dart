@@ -20,6 +20,23 @@ class VeedorRepositoryImpl implements VeedorRepository {
 
   bool _isLocalId(String id) => id.startsWith('local_');
 
+  bool _isNetworkError(ServerException e) {
+    final msg = e.message.toLowerCase();
+    return msg.contains('socket') ||
+        msg.contains('connection refused') ||
+        msg.contains('connection timed out') ||
+        msg.contains('network') ||
+        msg.contains('host') ||
+        msg.contains('dns') ||
+        msg.contains('timeout') ||
+        e.code == null ||
+        e.code == 0;
+  }
+
+  bool _isPermissionError(ServerException e) {
+    return e.code == 401 || e.code == 403;
+  }
+
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getMesasVeedor(
     String veedorId,
@@ -58,8 +75,16 @@ class VeedorRepositoryImpl implements VeedorRepository {
       );
       return Right(acta);
     } on ServerException catch (e) {
+      if (_isPermissionError(e)) {
+        debugPrint('[REPO:veedor] PERMISSION DENIED — code=${e.code} type=${e.type} msg=${e.message}');
+        return Left(PermissionFailure(e.message));
+      }
+      if (!_isNetworkError(e)) {
+        debugPrint('[REPO:veedor] SERVER ERROR — code=${e.code} type=${e.type} msg=${e.message}');
+        return Left(ServerFailure(e.message));
+      }
+
       debugPrint('[REPO:veedor] OFFLINE FALLBACK — motivo: ${e.message}');
-      // Offline fallback: save acta locally for later sync
       try {
         final localId = _generateLocalId();
         final pendiente = ActaPendienteModel(
@@ -99,7 +124,6 @@ class VeedorRepositoryImpl implements VeedorRepository {
     String filePath,
     String actaId,
   ) async {
-    // If the actaId is a local pending ID, save photo path locally
     if (_isLocalId(actaId)) {
       try {
         await localDatasource.actualizarEstado(
@@ -115,8 +139,17 @@ class VeedorRepositoryImpl implements VeedorRepository {
     try {
       final url = await remoteDatasource.subirFotoActa(filePath, actaId);
       return Right(url);
-    } on ServerException catch (_) {
-      // Remote upload failed — save locally for later sync
+    } on ServerException catch (e) {
+      if (_isPermissionError(e)) {
+        debugPrint('[REPO:veedor] subirFoto PERMISSION DENIED — code=${e.code} type=${e.type} msg=${e.message}');
+        return Left(PermissionFailure(e.message));
+      }
+      if (!_isNetworkError(e)) {
+        debugPrint('[REPO:veedor] subirFoto SERVER ERROR — code=${e.code} type=${e.type} msg=${e.message}');
+        return Left(ServerFailure(e.message));
+      }
+
+      debugPrint('[REPO:veedor] subirFoto OFFLINE FALLBACK — motivo: ${e.message}');
       try {
         await localDatasource.actualizarEstado(
           actaId,

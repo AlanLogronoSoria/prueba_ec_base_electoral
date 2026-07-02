@@ -68,12 +68,10 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
       final documents = await databases.listDocuments(
         databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.recintosCollectionId,
-        // FIX: el atributo real en Appwrite se llama 'coordinador_recinto_id',
-        // no 'coordinador_id'
-        queries: [Query.isNull('coordinador_recinto_id')],
       );
       return documents.documents
           .map((doc) => RecintoModel.fromMap(doc.data, doc.$id))
+          .where((r) => r.coordinadorRecintoId == null)
           .toList();
     } on AppwriteException catch (e) {
       throw ServerException(

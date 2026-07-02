@@ -76,11 +76,11 @@ class VeedorBloc extends Bloc<VeedorEvent, VeedorState> {
       ),
     );
     debugPrint('[BLOC:veedor] Usecase result: ${result.isRight() ? "SUCCESS" : "FAILURE"}');
-    if (result.isLeft()) {
-      result.fold((f) => debugPrint('[BLOC:veedor] FAILURE: ${f.message}'), (_) {});
-    }
     result.fold(
-      (failure) => emit(VeedorError(message: failure.message)),
+      (failure) {
+        debugPrint('[BLOC:veedor] FAILURE type=${failure.runtimeType} msg=${failure.message}');
+        emit(VeedorError(message: failure.message));
+      },
       (acta) => emit(ActaRegistrada(acta: acta)),
     );
   }

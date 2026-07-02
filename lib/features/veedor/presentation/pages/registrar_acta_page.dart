@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/gps_helper.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -111,6 +114,22 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
 
   bool _validarActa() {
     final total = int.tryParse(_totalController.text) ?? 0;
+
+    for (final c in _orgControllers.values) {
+      final voto = int.tryParse(c.text) ?? 0;
+      if (voto > total) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'El voto de una organización ($voto) excede el total de sufragantes ($total)',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return false;
+      }
+    }
+
     final nulos = int.tryParse(_nulosController.text) ?? 0;
     final blancos = int.tryParse(_blancosController.text) ?? 0;
 
@@ -228,154 +247,133 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
             }
           }
         },
-        builder: (context, state) {
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextFormField(
-                        controller: _mesaIdController,
-                        decoration: const InputDecoration(
-                          labelText: 'ID de la Mesa',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (v) =>
-                            v?.isEmpty ?? true ? 'Requerido' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _dignidad,
-                        decoration: const InputDecoration(
-                          labelText: 'Dignidad',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'alcalde',
-                            child: Text('Alcalde'),
+          builder: (context, state) {
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _mesaIdController,
+                          decoration: const InputDecoration(
+                            labelText: 'ID de la Mesa',
+                            prefixIcon: Icon(Icons.table_chart_rounded, size: 20, color: AppColors.textTertiary),
                           ),
-                          DropdownMenuItem(
-                            value: 'prefecto',
-                            child: Text('Prefecto'),
+                          validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _dignidad,
+                          decoration: const InputDecoration(
+                            labelText: 'Dignidad',
+                            prefixIcon: Icon(Icons.assignment_rounded, size: 20, color: AppColors.textTertiary),
                           ),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) setState(() => _dignidad = v);
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _totalController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Total Sufragantes',
-                          border: OutlineInputBorder(),
+                          items: const [
+                            DropdownMenuItem(value: 'alcalde', child: Text('Alcalde')),
+                            DropdownMenuItem(value: 'prefecto', child: Text('Prefecto')),
+                          ],
+                          onChanged: (v) {
+                            if (v != null) setState(() => _dignidad = v);
+                          },
                         ),
-                        validator: (v) =>
-                            v?.isEmpty ?? true ? 'Requerido' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _nulosController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Votos Nulos',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (v) =>
-                            v?.isEmpty ?? true ? 'Requerido' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _blancosController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Votos Blancos',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (v) =>
-                            v?.isEmpty ?? true ? 'Requerido' : null,
-                      ),
-                      const SizedBox(height: 24),
-                      if (_organizaciones.isNotEmpty) ...[
-                        const Text(
-                          'Votos por Organización',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _totalController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Total Sufragantes',
+                            prefixIcon: Icon(Icons.people_rounded, size: 20, color: AppColors.textTertiary),
                           ),
+                          validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
                         ),
-                        const SizedBox(height: 8),
-                        ..._organizaciones.map((org) {
-                          final id = org['id'] as String;
-                          final nombre = org['nombre'] as String;
-                          final candidato = org['candidato'] as String;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: TextFormField(
-                              controller: _orgControllers[id],
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                labelText: '$nombre - $candidato',
-                                border: const OutlineInputBorder(),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nulosController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Votos Nulos',
+                            prefixIcon: Icon(Icons.close_rounded, size: 20, color: AppColors.textTertiary),
+                          ),
+                          validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _blancosController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Votos Blancos',
+                            prefixIcon: Icon(Icons.check_box_outline_blank_rounded, size: 20, color: AppColors.textTertiary),
+                          ),
+                          validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
+                        ),
+                        const SizedBox(height: 24),
+                        if (_organizaciones.isNotEmpty) ...[
+                          const Text('Votos por Organización', style: AppTypography.headingSmall),
+                          const SizedBox(height: 8),
+                          ..._organizaciones.map((org) {
+                            final id = org['id'] as String;
+                            final nombre = org['nombre'] as String;
+                            final candidato = org['candidato'] as String;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: TextFormField(
+                                controller: _orgControllers[id],
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: '$nombre - $candidato',
+                                ),
+                                validator: (v) => v?.isEmpty ?? true ? 'Requerido' : null,
                               ),
-                              validator: (v) => v?.isEmpty ?? true
-                                  ? 'Requerido'
-                                  : null,
-                            ),
-                          );
-                        }),
-                      ],
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: _gpsObtained ? null : _obtenerGps,
-                        icon: Icon(
-                          _gpsObtained
-                              ? Icons.location_on
-                              : Icons.location_off,
-                          color: _gpsObtained ? Colors.green : null,
+                            );
+                          }),
+                        ],
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: _gpsObtained ? null : _obtenerGps,
+                          icon: Icon(
+                            _gpsObtained ? Icons.gps_fixed_rounded : Icons.gps_off_rounded,
+                            size: 20,
+                            color: _gpsObtained ? AppColors.success : AppColors.textSecondary,
+                          ),
+                          label: Text(_gpsObtained ? 'GPS Obtenido' : 'Obtener Ubicación GPS'),
                         ),
-                        label: Text(
-                          _gpsObtained
-                              ? 'GPS Obtenido'
-                              : 'Obtener Ubicación GPS',
-                        ),
-                      ),
-                      if (_gpsObtained)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            'Lat: $_gpsLat, Lng: $_gpsLng',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
+                        if (_gpsObtained)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.successLight,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.location_on_rounded, size: 16, color: AppColors.success),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Lat: $_gpsLat, Lng: $_gpsLng',
+                                    style: const TextStyle(fontSize: 12, color: AppColors.success),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: state is VeedorLoading ? null : _onRegistrar,
+                          child: const Text('Guardar Acta'),
                         ),
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed:
-                            state is VeedorLoading ? null : _onRegistrar,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: const Text(
-                          'Guardar Acta',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if (state is VeedorLoading)
-                Container(
-                  color: Colors.black26,
+                if (state is VeedorLoading)
+                  Container(
+                    color: AppColors.overlay,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
             ],

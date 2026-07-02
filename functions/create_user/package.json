@@ -1,0 +1,9 @@
+{
+  "name": "create-user-function",
+  "version": "1.0.0",
+  "description": "Appwrite Function to create users server-side with role validation",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^13.0.0"
+  }
+}

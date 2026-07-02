@@ -5,6 +5,7 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/veedor_bloc.dart';
 import '../bloc/veedor_event.dart';
 import '../bloc/veedor_state.dart';
+import 'corregir_acta_page.dart';
 
 class MisMesasPage extends StatefulWidget {
   const MisMesasPage({super.key});
@@ -14,6 +15,8 @@ class MisMesasPage extends StatefulWidget {
 }
 
 class _MisMesasPageState extends State<MisMesasPage> {
+  List<Map<String, dynamic>> _organizaciones = [];
+
   @override
   void initState() {
     super.initState();
@@ -22,6 +25,7 @@ class _MisMesasPageState extends State<MisMesasPage> {
       context
           .read<VeedorBloc>()
           .add(LoadMesasVeedor(veedorId: authState.usuario.id));
+      context.read<VeedorBloc>().add(const LoadOrganizaciones());
     }
   }
 
@@ -31,6 +35,9 @@ class _MisMesasPageState extends State<MisMesasPage> {
       appBar: AppBar(title: const Text('Mis Mesas')),
       body: BlocBuilder<VeedorBloc, VeedorState>(
         builder: (context, state) {
+          if (state is OrganizacionesLoaded) {
+            _organizaciones = state.organizaciones;
+          }
           if (state is VeedorLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -106,6 +113,25 @@ class _MisMesasPageState extends State<MisMesasPage> {
                                   'Acta: ${acta['dignidad']}'),
                               subtitle: Text(
                                 'Total: ${acta['total_sufragantes']}',
+                              ),
+                              trailing: FilledButton.tonalIcon(
+                                icon: const Icon(Icons.edit, size: 18),
+                                label: const Text('Corregir'),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          BlocProvider.value(
+                                        value: context.read<VeedorBloc>(),
+                                        child: CorregirActaPage(
+                                          actaId: acta['id'] as String,
+                                          actaData: Map<String, dynamic>.from(acta),
+                                          organizaciones: _organizaciones,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),

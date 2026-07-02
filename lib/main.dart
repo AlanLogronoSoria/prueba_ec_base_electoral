@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/recovery_bloc.dart';
 import 'features/coordinador_provincial/presentation/bloc/provincial_bloc.dart';
@@ -45,11 +46,7 @@ class _ControlElectoralAppState extends State<ControlElectoralApp> {
       child: MaterialApp.router(
         title: 'Control Electoral',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: Colors.blue,
-          useMaterial3: true,
-          brightness: Brightness.light,
-        ),
+        theme: AppTheme.light,
         routerConfig: _appRouter,
       ),
     );

@@ -89,6 +89,32 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
     Map<String, int> votosPorOrganizacion,
   ) async {
     try {
+      final existingActas = await databases.listDocuments(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.actasCollectionId,
+        queries: [Query.equal('mesa_id', mesaId)],
+      );
+
+      final dignidadesExistentes = <String>{};
+      for (final doc in existingActas.documents) {
+        final d = doc.data['dignidad'] as String?;
+        if (d != null) dignidadesExistentes.add(d);
+      }
+
+      if (dignidadesExistentes.contains(dignidad)) {
+        throw ServerException(
+          'Ya existe un acta para la dignidad "$dignidad" en esta mesa. '
+          'Usa la opción "Corregir" para modificarla.',
+        );
+      }
+
+      if (dignidadesExistentes.length >= 2) {
+        throw ServerException(
+          'Esta mesa ya tiene sus 2 actas registradas (alcalde y prefecto). '
+          'Usa la opción "Corregir" para modificar cualquiera de ellas.',
+        );
+      }
+
       final doc = await databases.createDocument(
         databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.actasCollectionId,
@@ -103,6 +129,10 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
           'gps_lng': gpsLongitud,
           'created_by': registradoPor,
         },
+        permissions: [
+          Permission.read(Role.user(registradoPor)),
+          Permission.update(Role.user(registradoPor)),
+        ],
       );
 
       final actaId = doc.$id;
@@ -117,6 +147,10 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
             'organizacion_id': entry.key,
             'cantidad_votos': entry.value,
           },
+          permissions: [
+            Permission.read(Role.user(registradoPor)),
+            Permission.update(Role.user(registradoPor)),
+          ],
         );
       }
 

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../bloc/recovery_bloc.dart';
 import '../bloc/recovery_event.dart';
 import '../bloc/recovery_state.dart';
@@ -38,29 +42,25 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         listener: (context, state) {
           if (state is RecoveryError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
-          }
-          if (state is RecoveryEmailSent) {
+          } else if (state is RecoveryEmailSent) {
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (context) => AlertDialog(
+              builder: (ctx) => AlertDialog(
                 title: const Text('Correo Enviado'),
                 content: Text(
                   'Se ha enviado un enlace de recuperación a ${state.email}. '
-                  'Revisa tu bandeja de entrada y sigue las instrucciones.',
+                  'Revisa tu bandeja de entrada.',
                 ),
                 actions: [
                   FilledButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(ctx).pop();
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Volver al inicio'),
+                    child: const Text('Aceptar'),
                   ),
                 ],
               ),
@@ -80,63 +80,50 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Icon(
-                            Icons.lock_reset,
-                            size: 80,
-                            color: Colors.orange,
+                          Container(
+                            width: 64,
+                            height: 64,
+                            margin: const EdgeInsets.only(bottom: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.warningLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.lock_reset_rounded,
+                              size: 32,
+                              color: AppColors.warning,
+                            ),
                           ),
-                          const SizedBox(height: 16),
                           const Text(
                             'Recuperar Contraseña',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTypography.displayMedium,
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Ingresa tu cédula para recibir un enlace de '
-                            'recuperación en tu correo electrónico.',
+                            'Ingresa tu cédula para recibir un enlace de recuperación en tu correo registrado.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
+                            style: AppTypography.bodySmall,
                           ),
                           const SizedBox(height: 32),
-                          TextFormField(
+                          AppTextField(
                             controller: _cedulaController,
+                            label: 'Cédula',
+                            hint: 'Ingrese su cédula',
+                            prefixIcon: Icons.badge_outlined,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Cédula',
-                              prefixIcon: Icon(Icons.badge),
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Ingrese su cédula';
-                              }
-                              if (value.trim().length != 10) {
-                                return 'La cédula debe tener 10 dígitos';
-                              }
+                            validator: (v) {
+                              if (v?.trim().isEmpty ?? true) return 'Ingrese su cédula';
+                              if (v!.trim().length != 10) return 'Debe tener 10 dígitos';
                               return null;
                             },
                           ),
                           const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed:
-                                state is RecoveryLoading ? null : _onRequestReset,
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: const Text(
-                              'Enviar enlace de recuperación',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Volver al inicio de sesión'),
+                          AppButton(
+                            label: 'Enviar enlace de recuperación',
+                            icon: Icons.send_rounded,
+                            onPressed: state is RecoveryLoading ? null : _onRequestReset,
+                            isLoading: state is RecoveryLoading,
                           ),
                         ],
                       ),
@@ -146,9 +133,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 if (state is RecoveryLoading)
                   Container(
                     color: Colors.black26,
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
               ],
             );

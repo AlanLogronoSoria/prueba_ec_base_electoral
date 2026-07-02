@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -27,7 +30,6 @@ class VeedorDashboardPage extends StatelessWidget {
                 pendientes = syncState.pendientesCount;
                 conectado = syncState.isConnected;
               }
-
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -37,22 +39,22 @@ class VeedorDashboardPage extends StatelessWidget {
                       child: Badge(
                         label: Text('$pendientes'),
                         child: Icon(
-                          Icons.sync,
-                          color: conectado ? Colors.orange : Colors.grey,
+                          Icons.sync_rounded,
+                          color: conectado ? AppColors.warning : AppColors.textTertiary,
+                          size: 20,
                         ),
                       ),
                     )
                   else
                     Icon(
-                      Icons.cloud_done,
-                      color: conectado ? Colors.green : Colors.grey,
+                      Icons.cloud_done_rounded,
+                      color: conectado ? AppColors.success : AppColors.textTertiary,
+                      size: 20,
                     ),
                   IconButton(
-                    icon: const Icon(Icons.logout),
+                    icon: const Icon(Icons.logout_rounded, size: 20),
                     onPressed: () {
-                      context
-                          .read<AuthBloc>()
-                          .add(const LogoutRequested());
+                      context.read<AuthBloc>().add(const LogoutRequested());
                     },
                   ),
                 ],
@@ -70,110 +72,105 @@ class VeedorDashboardPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.visibility,
-                              size: 48, color: Colors.green),
-                          const SizedBox(height: 8),
-                          Text(
-                            usuario.nombreCompleto,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  AppCard(
+                    backgroundColor: AppColors.success,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(30),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          const Text(
-                            'Veedor',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                          child: const Icon(Icons.visibility_rounded, size: 32, color: Colors.white),
+                        ),
+                        Text(
+                          usuario.nombreCompleto,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Veedor',
+                          style: TextStyle(fontSize: 13, color: Color(0xFFA7F3D0)),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),
                   BlocBuilder<SyncBloc, SyncState>(
                     builder: (context, syncState) {
-                      if (syncState is SyncIdle &&
-                          syncState.pendientesCount > 0) {
-                        return Card(
-                          color: Colors.orange.shade50,
+                      if (syncState is SyncIdle && syncState.pendientesCount > 0) {
+                        return AppCard(
+                          backgroundColor: AppColors.warningLight,
                           child: ListTile(
-                            leading: const Icon(Icons.sync,
-                                color: Colors.orange),
+                            leading: const Icon(Icons.sync_rounded, color: AppColors.warning),
                             title: Text(
                               '${syncState.pendientesCount} acta(s) pendiente(s) de sincronización',
-                              style: const TextStyle(fontSize: 13),
+                              style: AppTypography.labelMedium,
                             ),
                             subtitle: syncState.conflictosCount > 0
                                 ? Text(
                                     '${syncState.conflictosCount} con conflicto',
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 12,
-                                    ),
+                                    style: const TextStyle(color: AppColors.error, fontSize: 12),
                                   )
                                 : null,
                             trailing: syncState.isConnected
                                 ? TextButton(
-                                    onPressed: () => context
-                                        .read<SyncBloc>()
-                                        .add(const StartSync()),
+                                    onPressed: () => context.read<SyncBloc>().add(const StartSync()),
                                     child: const Text('Sincronizar'),
                                   )
-                                : const Icon(Icons.wifi_off,
-                                    color: Colors.grey),
+                                : const Icon(Icons.wifi_off_rounded, color: AppColors.textTertiary),
                           ),
                         );
                       }
                       if (syncState is SyncInProgress) {
-                        return Card(
+                        return AppCard(
                           child: ListTile(
-                            leading: const CircularProgressIndicator(
-                                strokeWidth: 2),
+                            leading: const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                             title: Text(
                               'Sincronizando... ${syncState.procesados}/${syncState.total}',
-                              style: const TextStyle(fontSize: 13),
+                              style: AppTypography.labelMedium,
                             ),
                           ),
                         );
                       }
                       if (syncState is SyncCompletado) {
-                        return Card(
-                          color: Colors.green.shade50,
+                        return AppCard(
+                          backgroundColor: AppColors.successLight,
                           child: ListTile(
-                            leading: const Icon(Icons.check_circle,
-                                color: Colors.green),
+                            leading: const Icon(Icons.check_circle_rounded, color: AppColors.success),
                             title: Text(
                               '${syncState.sincronizados} sincronizado(s), ${syncState.conflictos} conflicto(s)',
-                              style: const TextStyle(fontSize: 13),
+                              style: AppTypography.labelMedium,
                             ),
                           ),
                         );
                       }
                       if (syncState is SyncError) {
-                        return Card(
-                          color: Colors.red.shade50,
+                        return AppCard(
+                          backgroundColor: AppColors.errorLight,
                           child: ListTile(
-                            leading: const Icon(Icons.error,
-                                color: Colors.red),
-                            title: Text(
-                              syncState.message,
-                              style:
-                                  const TextStyle(fontSize: 13),
-                            ),
+                            leading: const Icon(Icons.error_rounded, color: AppColors.error),
+                            title: Text(syncState.message, style: AppTypography.labelMedium),
                           ),
                         );
                       }
                       return const SizedBox.shrink();
                     },
                   ),
+                  const SizedBox(height: 20),
+                  const Text('Acciones', style: AppTypography.labelMedium),
                   const SizedBox(height: 8),
-                  _DashboardButton(
-                    icon: Icons.table_chart,
+                  DashboardCard(
+                    icon: Icons.table_chart_rounded,
                     label: 'Mis Mesas',
+                    iconColor: AppColors.primary,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -185,10 +182,11 @@ class VeedorDashboardPage extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(height: 12),
-                  _DashboardButton(
-                    icon: Icons.note_add,
+                  const SizedBox(height: 8),
+                  DashboardCard(
+                    icon: Icons.note_add_rounded,
                     label: 'Registrar Acta',
+                    iconColor: AppColors.success,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -206,30 +204,6 @@ class VeedorDashboardPage extends StatelessWidget {
           }
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-}
-
-class _DashboardButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _DashboardButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, size: 32, color: Colors.green),
-        title: Text(label, style: const TextStyle(fontSize: 16)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
       ),
     );
   }

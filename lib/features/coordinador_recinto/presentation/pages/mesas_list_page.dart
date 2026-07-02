@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../bloc/recinto_bloc.dart';
 import '../bloc/recinto_event.dart';
 import '../bloc/recinto_state.dart';
@@ -36,18 +38,10 @@ class _MesasListPageState extends State<MesasListPage> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           FilledButton(
             onPressed: () {
-              context.read<RecintoBloc>().add(
-                    AsignarVeedor(
-                      mesaId: mesaId,
-                      veedorCedula: cedulaController.text.trim(),
-                    ),
-                  );
+              context.read<RecintoBloc>().add(AsignarVeedor(mesaId: mesaId, veedorCedula: cedulaController.text.trim()));
               Navigator.pop(ctx);
             },
             child: const Text('Asignar'),
@@ -65,21 +59,13 @@ class _MesasListPageState extends State<MesasListPage> {
         listener: (context, state) {
           if (state is VeedorAsignado) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Veedor asignado correctamente'),
-                backgroundColor: Colors.green,
-              ),
+              const SnackBar(content: Text('Veedor asignado correctamente'), backgroundColor: Colors.green),
             );
-            context
-                .read<RecintoBloc>()
-                .add(LoadMesas(recintoId: widget.recintoId));
+            context.read<RecintoBloc>().add(LoadMesas(recintoId: widget.recintoId));
           }
           if (state is RecintoError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -92,13 +78,10 @@ class _MesasListPageState extends State<MesasListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(state.message, textAlign: TextAlign.center),
+                  Text(state.message, textAlign: TextAlign.center, style: AppTypography.bodyMedium),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<RecintoBloc>().add(
-                          LoadMesas(recintoId: widget.recintoId));
-                    },
+                    onPressed: () => context.read<RecintoBloc>().add(LoadMesas(recintoId: widget.recintoId)),
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -107,70 +90,67 @@ class _MesasListPageState extends State<MesasListPage> {
           }
           if (state is MesasLoaded) {
             if (state.mesas.isEmpty) {
-              return const Center(
-                child: Text('No hay mesas registradas en este recinto'),
-              );
+              return const Center(child: Text('No hay mesas registradas en este recinto', style: AppTypography.bodyMedium));
             }
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<RecintoBloc>().add(
-                    LoadMesas(recintoId: widget.recintoId));
+                context.read<RecintoBloc>().add(LoadMesas(recintoId: widget.recintoId));
               },
               child: ListView.builder(
                 itemCount: state.mesas.length,
                 itemBuilder: (context, index) {
                   final mesa = state.mesas[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: ListTile(
-                      leading: Icon(
-                        mesa.hasActa ? Icons.check_circle : Icons.cancel,
-                        color:
-                            mesa.hasActa ? Colors.green : Colors.orange,
-                        size: 32,
-                      ),
-                      title: Text('JRV ${mesa.numeroJrv}'),
-                      subtitle: Text(
-                        mesa.hasActa
-                            ? 'Con acta registrada'
-                            : 'Sin acta registrada',
-                        style: TextStyle(
-                          color: mesa.hasActa
-                              ? Colors.green
-                              : Colors.orange,
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: mesa.hasActa ? AppColors.success.withAlpha(25) : AppColors.warning.withAlpha(25),
+                          borderRadius: BorderRadius.circular(10),
                         ),
+                        child: Icon(
+                          mesa.hasActa ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                          color: mesa.hasActa ? AppColors.success : AppColors.warning,
+                          size: 24,
+                        ),
+                      ),
+                      title: Text('JRV ${mesa.numeroJrv}', style: AppTypography.labelLarge),
+                      subtitle: Text(
+                        mesa.hasActa ? 'Con acta registrada' : 'Sin acta registrada',
+                        style: TextStyle(color: mesa.hasActa ? AppColors.success : AppColors.warning, fontSize: 12),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.person_add),
+                            icon: const Icon(Icons.person_add_alt_rounded, size: 20, color: AppColors.textSecondary),
                             tooltip: 'Reasignar veedor',
-                            onPressed: () =>
-                                _showAsignarVeedorDialog(mesa.id),
+                            onPressed: () => _showAsignarVeedorDialog(mesa.id),
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.surfaceVariant,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
+                          const SizedBox(width: 4),
                           IconButton(
-                            icon: const Icon(Icons.visibility),
+                            icon: const Icon(Icons.visibility_rounded, size: 20, color: AppColors.textSecondary),
                             tooltip: 'Ver detalle',
                             onPressed: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      BlocProvider.value(
-                                    value:
-                                        context.read<RecintoBloc>(),
-                                    child: DetalleMesaPage(
-                                      recintoId: widget.recintoId,
-                                      mesaId: mesa.id,
-                                      numeroJrv: mesa.numeroJrv,
-                                    ),
+                                  builder: (_) => BlocProvider.value(
+                                    value: context.read<RecintoBloc>(),
+                                    child: DetalleMesaPage(recintoId: widget.recintoId, mesaId: mesa.id, numeroJrv: mesa.numeroJrv),
                                   ),
                                 ),
                               );
                             },
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.surfaceVariant,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ],
                       ),

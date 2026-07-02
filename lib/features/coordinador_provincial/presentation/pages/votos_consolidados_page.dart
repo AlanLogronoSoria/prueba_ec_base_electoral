@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../bloc/provincial_bloc.dart';
 import '../bloc/provincial_event.dart';
 import '../bloc/provincial_state.dart';
@@ -15,9 +18,7 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
   @override
   void initState() {
     super.initState();
-    context
-        .read<ProvincialBloc>()
-        .add(const LoadVotosConsolidados());
+    context.read<ProvincialBloc>().add(const LoadVotosConsolidados());
   }
 
   @override
@@ -34,14 +35,10 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(state.message, textAlign: TextAlign.center),
+                  Text(state.message, textAlign: TextAlign.center, style: AppTypography.bodyMedium),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<ProvincialBloc>().add(
-                            const LoadVotosConsolidados(),
-                          );
-                    },
+                    onPressed: () => context.read<ProvincialBloc>().add(const LoadVotosConsolidados()),
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -50,111 +47,78 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
           }
           if (state is VotosConsolidadosLoaded) {
             if (state.votos.isEmpty) {
-              return const Center(
-                child: Text('No hay votos registrados'),
-              );
+              return const Center(child: Text('No hay votos registrados', style: AppTypography.bodyMedium));
             }
             return RefreshIndicator(
               onRefresh: () async {
-                context.read<ProvincialBloc>().add(
-                      const LoadVotosConsolidados(),
-                    );
+                context.read<ProvincialBloc>().add(const LoadVotosConsolidados());
               },
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: state.votos.length,
                 itemBuilder: (context, index) {
                   final grupo = state.votos[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            grupo.dignidad.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
+                  return AppCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(25),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.how_to_vote_rounded, color: AppColors.primary, size: 20),
                             ),
-                          ),
-                          const Divider(),
-                          ...grupo.resultados.map(
-                            (r) => Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 6),
+                            const SizedBox(width: 12),
+                            Text(grupo.dignidad.toUpperCase(), style: AppTypography.headingMedium.copyWith(color: AppColors.primary)),
+                          ],
+                        ),
+                        const Divider(height: 24),
+                        ...grupo.resultados.map((r) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          r.nombreOrganizacion,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
+                                        Text(r.nombreOrganizacion, style: AppTypography.labelLarge),
                                         if (r.candidato.isNotEmpty)
-                                          Text(
-                                            r.candidato,
-                                            style: const TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                            ),
-                                          ),
+                                          Text(r.candidato, style: AppTypography.caption),
                                       ],
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue[50],
+                                      color: AppColors.primary.withAlpha(15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       r.totalVotos.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue,
-                                      ),
+                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
                                     ),
                                   ),
                                 ],
                               ),
+                            )),
+                        const Divider(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total', style: AppTypography.headingSmall),
+                            Text(
+                              grupo.resultados.fold<int>(0, (sum, r) => sum + r.totalVotos).toString(),
+                              style: AppTypography.headingSmall,
                             ),
-                          ),
-                          const Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Text(
-                                grupo.resultados
-                                    .fold(0, (sum, r) => sum + r.totalVotos)
-                                    .toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                   );
                 },

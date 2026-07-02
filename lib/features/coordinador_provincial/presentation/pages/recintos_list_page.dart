@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../bloc/provincial_bloc.dart';
 import '../bloc/provincial_event.dart';
 import '../bloc/provincial_state.dart';
@@ -33,12 +36,10 @@ class _RecintosListPageState extends State<RecintosListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(state.message, textAlign: TextAlign.center),
+                  Text(state.message, textAlign: TextAlign.center, style: AppTypography.bodyMedium),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<ProvincialBloc>().add(const LoadRecintos());
-                    },
+                    onPressed: () => context.read<ProvincialBloc>().add(const LoadRecintos()),
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -48,7 +49,7 @@ class _RecintosListPageState extends State<RecintosListPage> {
           if (state is RecintosLoaded) {
             if (state.recintos.isEmpty) {
               return const Center(
-                child: Text('No hay recintos registrados'),
+                child: Text('No hay recintos registrados', style: AppTypography.bodyMedium),
               );
             }
             return RefreshIndicator(
@@ -60,25 +61,26 @@ class _RecintosListPageState extends State<RecintosListPage> {
                 itemBuilder: (context, index) {
                   final recinto = state.recintos[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: ListTile(
-                      title: Text(recinto.nombre),
-                      subtitle: Text(
-                        '${recinto.canton} - ${recinto.parroquia}',
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withAlpha(25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.business_rounded, color: AppColors.primary, size: 22),
                       ),
-                      trailing: const Icon(Icons.chevron_right),
+                      title: Text(recinto.nombre, style: AppTypography.labelLarge),
+                      subtitle: Text('${recinto.canton} - ${recinto.parroquia}', style: AppTypography.caption),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textTertiary, size: 20),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => BlocProvider.value(
                               value: context.read<ProvincialBloc>(),
-                              child: AvanceRecintoPage(
-                                recintoId: recinto.id,
-                                recintoNombre: recinto.nombre,
-                              ),
+                              child: AvanceRecintoPage(recintoId: recinto.id, recintoNombre: recinto.nombre),
                             ),
                           ),
                         );

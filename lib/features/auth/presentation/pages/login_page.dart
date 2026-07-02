@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_text_field.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -74,156 +77,182 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context, state) {
             return Stack(
               children: [
-                Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Icon(
-                            Icons.how_to_vote,
-                            size: 80,
-                            color: Colors.blue,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Control Electoral',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Sistema de Escrutinio Ecuador',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 48),
-                          TextFormField(
-                            controller: _cedulaController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Cédula',
-                              prefixIcon: Icon(Icons.badge),
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Ingrese su cédula';
-                              }
-                              if (value.trim().length != 10) {
-                                return 'La cédula debe tener 10 dígitos';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Correo electrónico',
-                              prefixIcon: Icon(Icons.email),
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Ingrese su correo electrónico';
-                              }
-                              if (!value.contains('@')) {
-                                return 'Ingrese un correo válido';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            value: _selectedRole,
-                            decoration: const InputDecoration(
-                              labelText: 'Rol',
-                              prefixIcon: Icon(Icons.supervised_user_circle),
-                              border: OutlineInputBorder(),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'coordinador_provincial',
-                                child: Text('Coordinador Provincial'),
+                Column(
+                  children: [
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.35,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primaryDark,
+                            AppColors.primary,
+                          ],
+                        ),
+                      ),
+                      child: SafeArea(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withAlpha(30),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Icon(
+                                  Icons.how_to_vote_rounded,
+                                  size: 44,
+                                  color: Colors.white,
+                                ),
                               ),
-                              DropdownMenuItem(
-                                value: 'coordinador_recinto',
-                                child: Text('Coordinador de Recinto'),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Control Electoral',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
-                              DropdownMenuItem(
-                                value: 'veedor',
-                                child: Text('Veedor'),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Sistema de Escrutinio Ecuador',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFFBFDBFE),
+                                ),
                               ),
                             ],
-                            onChanged: (v) =>
-                                setState(() => _selectedRole = v),
-                            validator: (v) =>
-                                v == null ? 'Seleccione un rol' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
-                              labelText: 'Contraseña',
-                              prefixIcon: const Icon(Icons.lock),
-                              border: const OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                ),
-                                onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Ingrese su contraseña';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () => context.push('/forgot-password'),
-                              child: const Text('¿Olvidaste tu contraseña?'),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          FilledButton(
-                            onPressed: state is AuthLoading ? null : _onLogin,
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: const Text(
-                              'Iniciar Sesión',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              AppTextField(
+                                controller: _cedulaController,
+                                label: 'Cédula',
+                                hint: 'Ingrese su cédula',
+                                prefixIcon: Icons.badge_outlined,
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Ingrese su cédula';
+                                  }
+                                  if (value.trim().length != 10) {
+                                    return 'La cédula debe tener 10 dígitos';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              AppTextField(
+                                controller: _emailController,
+                                label: 'Correo electrónico',
+                                hint: 'correo@ejemplo.com',
+                                prefixIcon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Ingrese su correo electrónico';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Ingrese un correo válido';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedRole,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Rol',
+                                    prefixIcon: Icon(
+                                      Icons.supervised_user_circle_outlined,
+                                      size: 20,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'coordinador_provincial',
+                                      child: Text('Coordinador Provincial'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'coordinador_recinto',
+                                      child: Text('Coordinador de Recinto'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'veedor',
+                                      child: Text('Veedor'),
+                                    ),
+                                  ],
+                                  onChanged: (v) =>
+                                      setState(() => _selectedRole = v),
+                                  validator: (v) =>
+                                      v == null ? 'Seleccione un rol' : null,
+                                ),
+                              ),
+                              AppTextField(
+                                controller: _passwordController,
+                                label: 'Contraseña',
+                                prefixIcon: Icons.lock_outline,
+                                obscureText: _obscurePassword,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Ingrese su contraseña';
+                                  }
+                                  return null;
+                                },
+                                suffix: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_rounded
+                                        : Icons.visibility_rounded,
+                                    size: 20,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                  onPressed: () => setState(
+                                      () => _obscurePassword = !_obscurePassword),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () => context.push('/forgot-password'),
+                                  child: const Text('¿Olvidaste tu contraseña?'),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              FilledButton(
+                                onPressed:
+                                    state is AuthLoading ? null : _onLogin,
+                                child: const Text('Iniciar Sesión'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (state is AuthLoading)
                   Container(
-                    color: Colors.black26,
+                    color: AppColors.overlay,
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),

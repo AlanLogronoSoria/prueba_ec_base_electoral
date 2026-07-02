@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/cedula_validator.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/provincial_bloc.dart';
@@ -44,10 +47,7 @@ class _CreateCoordinadorPageState extends State<CreateCoordinadorPage> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedRecintoId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debe seleccionar un recinto'),
-          backgroundColor: Colors.orange,
-        ),
+        const SnackBar(content: Text('Debe seleccionar un recinto'), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -74,19 +74,13 @@ class _CreateCoordinadorPageState extends State<CreateCoordinadorPage> {
         listener: (context, state) {
           if (state is CoordinadorRecintoCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Coordinador creado exitosamente'),
-                backgroundColor: Colors.green,
-              ),
+              const SnackBar(content: Text('Coordinador creado exitosamente'), backgroundColor: Colors.green),
             );
             Navigator.of(context).pop();
           }
           if (state is ProvincialError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -105,102 +99,72 @@ class _CreateCoordinadorPageState extends State<CreateCoordinadorPage> {
                     child: Form(
                       key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedRecintoId,
-                            decoration: const InputDecoration(
-                              labelText: 'Recinto',
-                              border: OutlineInputBorder(),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedRecintoId,
+                              decoration: const InputDecoration(
+                                labelText: 'Recinto',
+                                prefixIcon: Icon(Icons.business_rounded, size: 20, color: AppColors.textTertiary),
+                              ),
+                              items: _recintos
+                                  .map((r) => DropdownMenuItem(value: r.id, child: Text(r.nombre)))
+                                  .toList(),
+                              onChanged: (v) => setState(() => _selectedRecintoId = v),
+                              validator: (v) => v == null ? 'Seleccione un recinto' : null,
                             ),
-                            items: _recintos
-                                .map(
-                                  (r) => DropdownMenuItem(
-                                    value: r.id,
-                                    child: Text(r.nombre),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) =>
-                                setState(() => _selectedRecintoId = v),
-                            validator: (v) =>
-                                v == null ? 'Seleccione un recinto' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _cedulaController,
-                            decoration: const InputDecoration(
-                              labelText: 'Cédula',
-                              border: OutlineInputBorder(),
-                            ),
+                            label: 'Cédula',
+                            prefixIcon: Icons.badge_outlined,
                             keyboardType: TextInputType.number,
                             validator: (v) {
-                              if (v?.trim().isEmpty ?? true) {
-                                return 'Requerido';
-                              }
-                              if (!CedulaValidator.isValid(v!.trim())) {
-                                return 'Cédula inválida';
-                              }
+                              if (v?.trim().isEmpty ?? true) return 'Requerido';
+                              if (!CedulaValidator.isValid(v!.trim())) return 'Cédula inválida';
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _nombresController,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombres',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Nombres',
+                            prefixIcon: Icons.person_outline,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _apellidosController,
-                            decoration: const InputDecoration(
-                              labelText: 'Apellidos',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Apellidos',
+                            prefixIcon: Icons.person_outline,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _telefonoController,
-                            decoration: const InputDecoration(
-                              labelText: 'Teléfono',
-                              border: OutlineInputBorder(),
-                            ),
+                            label: 'Teléfono',
+                            prefixIcon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _correoController,
-                            decoration: const InputDecoration(
-                              labelText: 'Correo Electrónico',
-                              border: OutlineInputBorder(),
-                            ),
+                            label: 'Correo Electrónico',
+                            prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               if (v?.trim().isEmpty ?? true) return 'Requerido';
-                              if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                  .hasMatch(v!.trim())) {
+                              if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v!.trim())) {
                                 return 'Correo inválido';
                               }
                               return null;
                             },
                           ),
-                          const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed:
-                                state is ProvincialLoading ? null : _onCreate,
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              minimumSize: const Size(double.infinity, 0),
-                            ),
-                            child: const Text('Crear Coordinador'),
+                          const SizedBox(height: 8),
+                          AppButton(
+                            label: 'Crear Coordinador',
+                            icon: Icons.person_add_alt_rounded,
+                            onPressed: state is ProvincialLoading ? null : _onCreate,
+                            isLoading: state is ProvincialLoading,
                           ),
                         ],
                       ),
@@ -209,7 +173,7 @@ class _CreateCoordinadorPageState extends State<CreateCoordinadorPage> {
                 ),
                 if (state is ProvincialLoading)
                   Container(
-                    color: Colors.black26,
+                    color: AppColors.overlay,
                     child: const Center(child: CircularProgressIndicator()),
                   ),
               ],

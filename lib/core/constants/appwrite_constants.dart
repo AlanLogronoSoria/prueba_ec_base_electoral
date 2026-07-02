@@ -32,4 +32,7 @@ class AppwriteConstants {
 
   static String get adminKey =>
       dotenv.env['APPWRITE_ADMIN_KEY'] ?? '';
+
+  static String get createUserFunctionId =>
+      dotenv.env['APPWRITE_CREATE_USER_FUNCTION_ID'] ?? '';
 }

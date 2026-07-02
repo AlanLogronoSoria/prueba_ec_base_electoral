@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/image_quality_checker.dart';
 import '../bloc/veedor_bloc.dart';
 import '../bloc/veedor_event.dart';
@@ -82,28 +84,20 @@ class _FotoActaPageState extends State<FotoActaPage> {
             if (state.fotoUrl.startsWith('local:')) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text(
-                    'Foto guardada localmente — se subirá al sincronizar',
-                  ),
+                  content: Text('Foto guardada localmente — se subirá al sincronizar'),
                   backgroundColor: Colors.orange,
                 ),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Foto subida exitosamente'),
-                  backgroundColor: Colors.green,
-                ),
+                const SnackBar(content: Text('Foto subida exitosamente'), backgroundColor: Colors.green),
               );
             }
             Navigator.of(context).popUntil((route) => route.isFirst);
           }
           if (state is VeedorError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -116,19 +110,26 @@ class _FotoActaPageState extends State<FotoActaPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.camera_alt_rounded, size: 32, color: AppColors.primary),
+                    ),
                     const Text(
                       'Toma una foto del acta',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTypography.headingMedium,
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'La foto debe ser nítida y legible.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: AppTypography.bodySmall,
                     ),
                     const SizedBox(height: 32),
                     if (_imageFile != null)
@@ -143,27 +144,19 @@ class _FotoActaPageState extends State<FotoActaPage> {
                       )
                     else
                       Container(
-                        height: 200,
+                        height: 220,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
+                          color: AppColors.surfaceVariant,
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.border),
                         ),
-                        child: const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt,
-                                size: 64,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Presiona para tomar foto',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.camera_alt_rounded, size: 64, color: AppColors.textTertiary),
+                            SizedBox(height: 8),
+                            Text('Presiona para tomar foto', style: TextStyle(color: AppColors.textTertiary)),
+                          ],
                         ),
                       ),
                     const SizedBox(height: 24),
@@ -172,11 +165,8 @@ class _FotoActaPageState extends State<FotoActaPage> {
                     else if (_imageFile == null)
                       FilledButton.icon(
                         onPressed: _tomarFoto,
-                        icon: const Icon(Icons.camera_alt),
+                        icon: const Icon(Icons.camera_alt_rounded, size: 20),
                         label: const Text('Tomar Foto'),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
                       )
                     else
                       Column(
@@ -184,12 +174,8 @@ class _FotoActaPageState extends State<FotoActaPage> {
                         children: [
                           FilledButton.icon(
                             onPressed: _subirFoto,
-                            icon: const Icon(Icons.cloud_upload),
+                            icon: const Icon(Icons.cloud_upload_rounded, size: 20),
                             label: const Text('Subir Foto'),
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                            ),
                           ),
                           const SizedBox(height: 8),
                           OutlinedButton(
@@ -203,7 +189,7 @@ class _FotoActaPageState extends State<FotoActaPage> {
               ),
               if (state is VeedorLoading)
                 Container(
-                  color: Colors.black26,
+                  color: AppColors.overlay,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
             ],

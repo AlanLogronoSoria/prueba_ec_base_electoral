@@ -190,6 +190,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
             if (recintoId != null) 'recinto_id': recintoId,
             'creado_por': creadoPor,
           },
+          permissions: [
+            Permission.read(Role.user(userId)),
+            Permission.update(Role.user(userId)),
+          ],
         );
 
         // Enviar verificación de correo (excepto para usuarios seed)

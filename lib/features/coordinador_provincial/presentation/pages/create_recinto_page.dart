@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../bloc/provincial_bloc.dart';
 import '../bloc/provincial_event.dart';
 import '../bloc/provincial_state.dart';
@@ -49,19 +52,13 @@ class _CreateRecintoPageState extends State<CreateRecintoPage> {
         listener: (context, state) {
           if (state is RecintoCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Recinto creado exitosamente'),
-                backgroundColor: Colors.green,
-              ),
+              const SnackBar(content: Text('Recinto creado exitosamente'), backgroundColor: Colors.green),
             );
             Navigator.of(context).pop();
           }
           if (state is ProvincialError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -75,54 +72,38 @@ class _CreateRecintoPageState extends State<CreateRecintoPage> {
                     child: Form(
                       key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          TextFormField(
+                          AppTextField(
                             controller: _cantonController,
-                            decoration: const InputDecoration(
-                              labelText: 'Cantón',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Cantón',
+                            prefixIcon: Icons.map_rounded,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _parroquiaController,
-                            decoration: const InputDecoration(
-                              labelText: 'Parroquia',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Parroquia',
+                            prefixIcon: Icons.location_city_rounded,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _nombreController,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre del Recinto',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Nombre del Recinto',
+                            prefixIcon: Icons.business_rounded,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _numeroJrvController,
-                            decoration: const InputDecoration(
-                              labelText: 'Número JRV (opcional)',
-                              border: OutlineInputBorder(),
-                            ),
+                            label: 'Número JRV (opcional)',
+                            prefixIcon: Icons.pin_rounded,
+                            keyboardType: TextInputType.number,
                           ),
-                          const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed:
-                                state is ProvincialLoading ? null : _onCreate,
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              minimumSize: const Size(double.infinity, 0),
-                            ),
-                            child: const Text('Crear Recinto'),
+                          const SizedBox(height: 8),
+                          AppButton(
+                            label: 'Crear Recinto',
+                            icon: Icons.add_location_alt_rounded,
+                            onPressed: state is ProvincialLoading ? null : _onCreate,
+                            isLoading: state is ProvincialLoading,
                           ),
                         ],
                       ),
@@ -131,7 +112,7 @@ class _CreateRecintoPageState extends State<CreateRecintoPage> {
                 ),
                 if (state is ProvincialLoading)
                   Container(
-                    color: Colors.black26,
+                    color: AppColors.overlay,
                     child: const Center(child: CircularProgressIndicator()),
                   ),
               ],

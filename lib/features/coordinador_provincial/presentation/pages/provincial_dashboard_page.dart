@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../bloc/provincial_bloc.dart';
@@ -18,7 +21,7 @@ class ProvincialDashboardPage extends StatelessWidget {
         title: const Text('Panel Provincial'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded, size: 20),
             onPressed: () {
               context.read<AuthBloc>().add(const LogoutRequested());
             },
@@ -31,32 +34,43 @@ class ProvincialDashboardPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.assignment, size: 48, color: Colors.blue),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Control Electoral',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+              AppCard(
+                backgroundColor: AppColors.primary,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(30),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      const Text(
-                        'Coordinador Provincial',
-                        style: TextStyle(color: Colors.grey),
+                      child: const Icon(
+                        Icons.assignment_rounded,
+                        size: 32,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
+                    ),
+                    const Text(
+                      'Control Electoral',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Coordinador Provincial',
+                      style: TextStyle(fontSize: 13, color: Color(0xFFBFDBFE)),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              _DashboardButton(
-                icon: Icons.business,
+              const SizedBox(height: 20),
+              const Text('Acciones', style: AppTypography.labelMedium),
+              const SizedBox(height: 8),
+              DashboardCard(
+                icon: Icons.business_rounded,
                 label: 'Gestionar Recintos',
+                iconColor: AppColors.primary,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -68,10 +82,11 @@ class ProvincialDashboardPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 12),
-              _DashboardButton(
-                icon: Icons.add_location,
+              const SizedBox(height: 8),
+              DashboardCard(
+                icon: Icons.add_location_alt_rounded,
                 label: 'Crear Recinto',
+                iconColor: AppColors.success,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -83,10 +98,11 @@ class ProvincialDashboardPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 12),
-              _DashboardButton(
-                icon: Icons.person_add,
+              const SizedBox(height: 8),
+              DashboardCard(
+                icon: Icons.person_add_alt_rounded,
                 label: 'Crear Coordinador de Recinto',
+                iconColor: AppColors.accent,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -98,10 +114,11 @@ class ProvincialDashboardPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 12),
-              _DashboardButton(
-                icon: Icons.pie_chart,
+              const SizedBox(height: 8),
+              DashboardCard(
+                icon: Icons.pie_chart_rounded,
                 label: 'Votos Consolidados',
+                iconColor: AppColors.secondary,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -116,30 +133,6 @@ class ProvincialDashboardPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DashboardButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _DashboardButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, size: 32, color: Colors.blue),
-        title: Text(label, style: const TextStyle(fontSize: 16)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
       ),
     );
   }

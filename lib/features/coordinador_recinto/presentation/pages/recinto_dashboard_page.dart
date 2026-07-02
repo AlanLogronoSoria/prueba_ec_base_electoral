@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
@@ -37,7 +40,7 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
         title: const Text('Panel Recinto'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout_rounded, size: 20),
             onPressed: () {
               context.read<AuthBloc>().add(const LogoutRequested());
             },
@@ -52,9 +55,7 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
             return RefreshIndicator(
               onRefresh: () async {
                 if (recintoId != null) {
-                  context
-                      .read<RecintoBloc>()
-                      .add(LoadAvance(recintoId: recintoId));
+                  context.read<RecintoBloc>().add(LoadAvance(recintoId: recintoId));
                 }
               },
               child: Padding(
@@ -62,73 +63,80 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.person,
-                                size: 48, color: Colors.teal),
-                            const SizedBox(height: 8),
-                            Text(
-                              usuario.nombreCompleto,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    AppCard(
+                      backgroundColor: AppColors.primary,
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(30),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            const Text(
-                              'Coordinador de Recinto',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                            child: const Icon(Icons.person_rounded, size: 32, color: Colors.white),
+                          ),
+                          Text(
+                            usuario.nombreCompleto,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Coordinador de Recinto',
+                            style: TextStyle(fontSize: 13, color: Color(0xFFBFDBFE)),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
                     BlocBuilder<RecintoBloc, RecintoState>(
                       builder: (context, state) {
                         if (state is AvanceLoaded) {
-                          return Card(
-                            color: Colors.teal.shade50,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  _AvanceItem(
-                                    label: 'Mesas',
-                                    value: '${state.totalMesas}',
-                                    icon: Icons.table_chart,
-                                  ),
-                                  _AvanceItem(
-                                    label: 'Actas',
-                                    value: '${state.actasRegistradas}',
-                                    icon: Icons.description,
-                                  ),
-                                  _AvanceItem(
-                                    label: 'Pendientes',
-                                    value:
-                                        '${state.totalMesas - state.actasRegistradas}',
-                                    icon: Icons.pending,
-                                  ),
-                                ],
-                              ),
+                          return AppCard(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                StatCard(
+                                  label: 'Mesas',
+                                  value: '${state.totalMesas}',
+                                  icon: Icons.table_chart_rounded,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 12),
+                                StatCard(
+                                  label: 'Actas',
+                                  value: '${state.actasRegistradas}',
+                                  icon: Icons.description_rounded,
+                                  color: AppColors.success,
+                                ),
+                                const SizedBox(width: 12),
+                                StatCard(
+                                  label: 'Pendientes',
+                                  value: '${state.totalMesas - state.actasRegistradas}',
+                                  icon: Icons.pending_rounded,
+                                  color: AppColors.warning,
+                                ),
+                              ],
                             ),
                           );
                         }
                         if (state is RecintoLoading) {
-                          return const Center(
-                              child: LinearProgressIndicator());
+                          return const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: LinearProgressIndicator(),
+                          );
                         }
                         return const SizedBox.shrink();
                       },
                     ),
-                    const SizedBox(height: 24),
-                    _DashboardButton(
-                      icon: Icons.table_chart,
+                    const SizedBox(height: 20),
+                    const Text('Acciones', style: AppTypography.labelMedium),
+                    const SizedBox(height: 8),
+                    DashboardCard(
+                      icon: Icons.table_chart_rounded,
                       label: 'Gestionar Mesas',
+                      iconColor: AppColors.primary,
                       onTap: () {
                         if (recintoId == null) return;
                         Navigator.of(context).push(
@@ -141,27 +149,28 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    _DashboardButton(
-                      icon: Icons.person_add,
+                    const SizedBox(height: 8),
+                    DashboardCard(
+                      icon: Icons.person_add_alt_rounded,
                       label: 'Crear Veedor',
+                      iconColor: AppColors.success,
                       onTap: () {
                         if (recintoId == null) return;
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => BlocProvider.value(
                               value: context.read<RecintoBloc>(),
-                              child: CreateVeedorPage(
-                                  recintoId: recintoId),
+                              child: CreateVeedorPage(recintoId: recintoId),
                             ),
                           ),
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    _DashboardButton(
-                      icon: Icons.search,
+                    const SizedBox(height: 8),
+                    DashboardCard(
+                      icon: Icons.search_rounded,
                       label: 'Buscar Mesa por JRV',
+                      iconColor: AppColors.secondary,
                       onTap: () {
                         if (recintoId == null) return;
                         _showBuscarMesaDialog(context, recintoId);
@@ -178,8 +187,7 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
     );
   }
 
-  void _showBuscarMesaDialog(
-      BuildContext context, String recintoId) {
+  void _showBuscarMesaDialog(BuildContext context, String recintoId) {
     final controller = TextEditingController();
     showDialog(
       context: context,
@@ -215,60 +223,6 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
             child: const Text('Buscar'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AvanceItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _AvanceItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.teal, size: 28),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      ],
-    );
-  }
-}
-
-class _DashboardButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _DashboardButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon, size: 32, color: Colors.teal),
-        title: Text(label, style: const TextStyle(fontSize: 16)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
       ),
     );
   }

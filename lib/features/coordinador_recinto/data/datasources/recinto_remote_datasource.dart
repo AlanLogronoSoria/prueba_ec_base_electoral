@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -36,11 +37,13 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
   final Databases databases;
   final Account account;
   final Storage storage;
+  final Functions functions;
 
   RecintoRemoteDatasourceImpl({
     required this.databases,
     required this.account,
     required this.storage,
+    required this.functions,
   });
 
   @override
@@ -86,32 +89,35 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
     String? mesaId,
   ) async {
     try {
-      final authUser = await account.create(
-        userId: ID.unique(),
-        email: correo,
-        password: AppConstants.defaultPassword,
-        name: '$nombres $apellidos',
-      );
+      final functionId = AppwriteConstants.createUserFunctionId;
+      if (functionId.isEmpty) {
+        throw ServerException('Función de creación de usuarios no configurada');
+      }
 
-      final userId = authUser.$id;
-
-      final userDoc = await databases.createDocument(
-        databaseId: AppwriteConstants.databaseId,
-        collectionId: AppwriteConstants.usuariosCollectionId,
-        documentId: userId,
-        data: {
+      final execution = await functions.createExecution(
+        functionId: functionId,
+        body: jsonEncode({
           'cedula': cedula,
           'nombres': nombres,
           'apellidos': apellidos,
           'telefono': telefono,
           'correo': correo,
           'rol': 'veedor',
-          'primer_login': true,
-          'creado_por': creadoPor,
-        },
+        }),
       );
 
-      final veedorId = userDoc.$id;
+      final responseBody = execution.responseBody;
+      if (responseBody.isEmpty) {
+        throw ServerException('Respuesta vacía de la función');
+      }
+
+      final result = jsonDecode(responseBody) as Map<String, dynamic>;
+      if (result['ok'] != true) {
+        throw ServerException(
+            result['message'] as String? ?? 'Error al crear veedor');
+      }
+
+      final veedorId = result['userId'] as String;
 
       if (mesaId != null) {
         await databases.updateDocument(

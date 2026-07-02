@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -35,10 +36,12 @@ abstract class ProvincialRemoteDatasource {
 class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
   final Databases databases;
   final Account account;
+  final Functions functions;
 
   ProvincialRemoteDatasourceImpl({
     required this.databases,
     required this.account,
+    required this.functions,
   });
 
   @override
@@ -106,11 +109,18 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
       // vacío. Si el campo debe ser realmente opcional, recuerda quitar el
       // "Required" en Appwrite Console -> recintos -> Columns -> numero_jrv.
 
+      final currentUser = await account.get();
+      final userId = currentUser.$id;
+
       final doc = await databases.createDocument(
         databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.recintosCollectionId,
         documentId: ID.unique(),
         data: data,
+        permissions: [
+          Permission.read(Role.user(userId)),
+          Permission.update(Role.user(userId)),
+        ],
       );
       return RecintoModel.fromMap(doc.data, doc.$id);
     } on AppwriteException catch (e) {
@@ -147,39 +157,42 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
         throw ServerException('Ya existe un usuario con el correo $correo');
       }
 
-      final authUser = await account.create(
-        userId: ID.unique(),
-        email: correo,
-        password: AppConstants.defaultPassword,
-        name: '$nombres $apellidos',
-      );
+      final functionId = AppwriteConstants.createUserFunctionId;
+      if (functionId.isEmpty) {
+        throw ServerException('Función de creación de usuarios no configurada');
+      }
 
-      await databases.createDocument(
-        databaseId: AppwriteConstants.databaseId,
-        collectionId: AppwriteConstants.usuariosCollectionId,
-        documentId: authUser.$id,
-        data: {
+      final execution = await functions.createExecution(
+        functionId: functionId,
+        body: jsonEncode({
           'cedula': cedula,
           'nombres': nombres,
           'apellidos': apellidos,
           'telefono': telefono,
           'correo': correo,
           'rol': 'coordinador_recinto',
-          'primer_login': true,
-          'recinto_id': recintoId,
-          'creado_por': creadoPor,
-        },
+          'recintoId': recintoId,
+        }),
       );
+
+      final responseBody = execution.responseBody;
+      if (responseBody.isEmpty) {
+        throw ServerException('Respuesta vacía de la función');
+      }
+
+      final result = jsonDecode(responseBody) as Map<String, dynamic>;
+      if (result['ok'] != true) {
+        throw ServerException(
+            result['message'] as String? ?? 'Error al crear usuario');
+      }
+
+      final userId = result['userId'] as String;
 
       await databases.updateDocument(
         databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.recintosCollectionId,
         documentId: recintoId,
-        data: {'coordinador_recinto_id': authUser.$id},
-      );
-
-      await account.createVerification(
-        url: '${AppwriteConstants.recoveryBaseUrl}/verificacion',
+        data: {'coordinador_recinto_id': userId},
       );
     } on ServerException {
       rethrow;

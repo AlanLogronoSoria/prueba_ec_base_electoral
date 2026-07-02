@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/recinto_bloc.dart';
@@ -27,9 +30,7 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
   @override
   void initState() {
     super.initState();
-    context
-        .read<RecintoBloc>()
-        .add(LoadMesas(recintoId: widget.recintoId));
+    context.read<RecintoBloc>().add(LoadMesas(recintoId: widget.recintoId));
   }
 
   @override
@@ -44,7 +45,6 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
 
   void _onCreate() {
     if (!_formKey.currentState!.validate()) return;
-
     final authState = context.read<AuthBloc>().state;
     String creadoPor = '';
     if (authState is AuthAuthenticated) {
@@ -71,19 +71,13 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
         listener: (context, state) {
           if (state is VeedorCreated) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Veedor creado y asignado exitosamente'),
-                backgroundColor: Colors.green,
-              ),
+              const SnackBar(content: Text('Veedor creado y asignado exitosamente'), backgroundColor: Colors.green),
             );
             Navigator.of(context).pop();
           }
           if (state is RecintoError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
@@ -97,105 +91,78 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
                     child: Form(
                       key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          TextFormField(
+                          AppTextField(
                             controller: _cedulaController,
+                            label: 'Cédula',
+                            prefixIcon: Icons.badge_outlined,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Cédula',
-                              border: OutlineInputBorder(),
-                            ),
                             validator: (v) {
-                              if (v?.trim().isEmpty ?? true) {
-                                return 'Requerido';
-                              }
-                              if (v!.trim().length != 10) {
-                                return 'Debe tener 10 dígitos';
-                              }
+                              if (v?.trim().isEmpty ?? true) return 'Requerido';
+                              if (v!.trim().length != 10) return 'Debe tener 10 dígitos';
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _nombresController,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombres',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Nombres',
+                            prefixIcon: Icons.person_outline,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _apellidosController,
-                            decoration: const InputDecoration(
-                              labelText: 'Apellidos',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            label: 'Apellidos',
+                            prefixIcon: Icons.person_outline,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _telefonoController,
+                            label: 'Teléfono',
+                            prefixIcon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
-                            decoration: const InputDecoration(
-                              labelText: 'Teléfono',
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (v) =>
-                                v?.trim().isEmpty ?? true ? 'Requerido' : null,
+                            validator: (v) => v?.trim().isEmpty ?? true ? 'Requerido' : null,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
+                          AppTextField(
                             controller: _correoController,
+                            label: 'Correo',
+                            prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              labelText: 'Correo',
-                              border: OutlineInputBorder(),
-                            ),
                             validator: (v) {
-                              if (v?.trim().isEmpty ?? true) {
-                                return 'Requerido';
-                              }
+                              if (v?.trim().isEmpty ?? true) return 'Requerido';
                               if (!v!.contains('@')) return 'Correo inválido';
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
                           if (state is MesasLoaded && state.mesas.isNotEmpty)
-                            DropdownButtonFormField<String>(
-                              initialValue: _selectedMesaId,
-                              decoration: const InputDecoration(
-                                labelText: 'Asignar a Mesa',
-                                border: OutlineInputBorder(),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedMesaId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Asignar a Mesa',
+                                  prefixIcon: Icon(Icons.table_chart_rounded, size: 20, color: AppColors.textTertiary),
+                                ),
+                                items: state.mesas
+                                    .map((m) => DropdownMenuItem(
+                                          value: m.id,
+                                          child: Text('JRV ${m.numeroJrv}${m.veedorId != null ? ' (con veedor)' : ''}'),
+                                        ))
+                                    .toList(),
+                                onChanged: (v) => setState(() => _selectedMesaId = v),
+                                validator: (v) => v == null ? 'Seleccione una mesa' : null,
                               ),
-                              items: state.mesas
-                                  .map(
-                                    (m) => DropdownMenuItem(
-                                      value: m.id,
-                                      child: Text(
-                                          'JRV ${m.numeroJrv}${m.veedorId != null ? ' (con veedor)' : ''}'),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) =>
-                                  setState(() => _selectedMesaId = v),
-                              validator: (v) =>
-                                  v == null ? 'Seleccione una mesa' : null,
                             )
                           else
-                            const Text('Cargando mesas...'),
-                          const SizedBox(height: 24),
-                          FilledButton(
-                            onPressed:
-                                state is RecintoLoading ? null : _onCreate,
-                            style: FilledButton.styleFrom(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              minimumSize: const Size(double.infinity, 0),
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 16),
+                              child: Center(child: Text('Cargando mesas...', style: TextStyle(color: AppColors.textTertiary))),
                             ),
-                            child: const Text('Crear Veedor y Asignar'),
+                          AppButton(
+                            label: 'Crear Veedor y Asignar',
+                            icon: Icons.person_add_alt_rounded,
+                            onPressed: state is RecintoLoading ? null : _onCreate,
+                            isLoading: state is RecintoLoading,
                           ),
                         ],
                       ),
@@ -204,9 +171,8 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
                 ),
                 if (state is RecintoLoading)
                   Container(
-                    color: Colors.black26,
-                    child:
-                        const Center(child: CircularProgressIndicator()),
+                    color: AppColors.overlay,
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
               ],
             );

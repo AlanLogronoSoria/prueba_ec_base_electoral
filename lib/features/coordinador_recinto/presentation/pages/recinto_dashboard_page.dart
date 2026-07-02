@@ -151,6 +151,17 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
                     ),
                     const SizedBox(height: 8),
                     DashboardCard(
+                      icon: Icons.add_chart_rounded,
+                      label: 'Crear Mesa',
+                      subtitle: 'Agregar una nueva JRV al recinto',
+                      iconColor: AppColors.accent,
+                      onTap: () {
+                        if (recintoId == null) return;
+                        _showCrearMesaSheet(context, recintoId);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    DashboardCard(
                       icon: Icons.person_add_alt_rounded,
                       label: 'Crear Veedor',
                       iconColor: AppColors.success,
@@ -183,6 +194,108 @@ class _RecintoDashboardPageState extends State<RecintoDashboardPage> {
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  void _showCrearMesaSheet(BuildContext context, String recintoId) {
+    final jrvController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => BlocListener<RecintoBloc, RecintoState>(
+        listener: (context, state) {
+          if (state is MesaCreada) {
+            Navigator.pop(ctx);
+            context.read<RecintoBloc>().add(LoadMesas(recintoId: recintoId));
+            context.read<RecintoBloc>().add(LoadAvance(recintoId: recintoId));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Mesa creada exitosamente'), backgroundColor: AppColors.success),
+            );
+          }
+          if (state is RecintoError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+            );
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.textTertiary.withAlpha(80),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withAlpha(40),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.table_chart_rounded, color: AppColors.accent, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Text('Nueva Mesa JRV', style: AppTypography.headingMedium),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                controller: jrvController,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: const TextStyle(color: AppColors.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: 'Número de JRV',
+                  hintText: 'Ej: 4',
+                  prefixIcon: Icon(Icons.pin_rounded, size: 20),
+                ),
+              ),
+              const SizedBox(height: 24),
+              BlocBuilder<RecintoBloc, RecintoState>(
+                builder: (context, state) {
+                  return FilledButton.icon(
+                    onPressed: state is RecintoLoading
+                        ? null
+                        : () {
+                            final jrv = jrvController.text.trim();
+                            if (jrv.isEmpty) return;
+                            context.read<RecintoBloc>().add(
+                                  CrearMesa(recintoId: recintoId, numeroJrv: jrv),
+                                );
+                          },
+                    icon: state is RecintoLoading
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.add_rounded, size: 20),
+                    label: Text(state is RecintoLoading ? 'Creando...' : 'Crear Mesa'),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

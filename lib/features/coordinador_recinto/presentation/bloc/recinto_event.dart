@@ -122,3 +122,13 @@ class LoadAvance extends RecintoEvent {
   @override
   List<Object?> get props => [recintoId];
 }
+
+class CrearMesa extends RecintoEvent {
+  final String recintoId;
+  final String numeroJrv;
+
+  const CrearMesa({required this.recintoId, required this.numeroJrv});
+
+  @override
+  List<Object?> get props => [recintoId, numeroJrv];
+}

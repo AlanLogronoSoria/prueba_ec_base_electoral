@@ -87,3 +87,7 @@ class RecintoError extends RecintoState {
   @override
   List<Object?> get props => [message];
 }
+
+class MesaCreada extends RecintoState {
+  const MesaCreada();
+}

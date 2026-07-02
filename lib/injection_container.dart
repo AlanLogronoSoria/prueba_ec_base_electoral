@@ -117,6 +117,7 @@ Future<void> init() async {
 
   // Recinto Feature
   sl.registerFactory(() => RecintoBloc(
+        datasource: sl(),
         getMesasUseCase: sl(),
         createVeedorUseCase: sl(),
         asignarVeedorUseCase: sl(),

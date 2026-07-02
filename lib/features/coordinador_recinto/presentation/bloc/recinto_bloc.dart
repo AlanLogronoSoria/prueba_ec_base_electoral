@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../data/datasources/recinto_remote_datasource.dart';
 import '../../domain/usecases/asignar_veedor_usecase.dart';
 import '../../domain/usecases/corregir_acta_usecase.dart';
 import '../../domain/usecases/create_veedor_usecase.dart';
@@ -13,6 +14,7 @@ import 'recinto_event.dart';
 import 'recinto_state.dart';
 
 class RecintoBloc extends Bloc<RecintoEvent, RecintoState> {
+  final RecintoRemoteDatasource datasource;
   final GetMesasUseCase getMesasUseCase;
   final CreateVeedorUseCase createVeedorUseCase;
   final AsignarVeedorUseCase asignarVeedorUseCase;
@@ -23,6 +25,7 @@ class RecintoBloc extends Bloc<RecintoEvent, RecintoState> {
   final GetAvanceUseCase getAvanceUseCase;
 
   RecintoBloc({
+    required this.datasource,
     required this.getMesasUseCase,
     required this.createVeedorUseCase,
     required this.asignarVeedorUseCase,
@@ -40,6 +43,20 @@ class RecintoBloc extends Bloc<RecintoEvent, RecintoState> {
     on<CorregirActa>(_onCorregirActa);
     on<SubirFotoActa>(_onSubirFotoActa);
     on<LoadAvance>(_onLoadAvance);
+    on<CrearMesa>(_onCrearMesa);
+  }
+
+  Future<void> _onCrearMesa(
+    CrearMesa event,
+    Emitter<RecintoState> emit,
+  ) async {
+    emit(const RecintoLoading());
+    try {
+      await datasource.createMesa(event.recintoId, event.numeroJrv);
+      emit(const MesaCreada());
+    } on Exception catch (e) {
+      emit(RecintoError(message: e.toString()));
+    }
   }
 
   Future<void> _onLoadMesas(

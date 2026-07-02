@@ -48,7 +48,18 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
           }
           if (state is VotosConsolidadosLoaded) {
             if (state.votos.isEmpty) {
-              return Center(child: Text('No hay votos registrados', style: AppTypography.bodyMedium));
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.how_to_vote_rounded, size: 80, color: AppColors.textTertiary.withAlpha(60)),
+                    const SizedBox(height: 16),
+                    Text('Aún no hay actas registradas', style: AppTypography.bodyLarge),
+                    const SizedBox(height: 8),
+                    Text('Los resultados aparecerán cuando se registren actas', style: AppTypography.caption),
+                  ],
+                ),
+              );
             }
             return RefreshIndicator(
               onRefresh: () async {

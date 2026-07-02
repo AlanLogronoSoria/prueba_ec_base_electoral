@@ -52,6 +52,20 @@ class _AvanceRecintoPageState extends State<AvanceRecintoPage> {
           }
           if (state is AvanceRecintoLoaded) {
             final porcentaje = state.totalMesas > 0 ? (state.actasRegistradas / state.totalMesas * 100) : 0.0;
+            if (state.totalMesas == 0) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.table_chart_rounded, size: 80, color: AppColors.textTertiary.withAlpha(60)),
+                    const SizedBox(height: 16),
+                    Text('Aún no hay mesas registradas', style: AppTypography.bodyLarge),
+                    const SizedBox(height: 8),
+                    Text('Agrega mesas para ver el avance del recinto', style: AppTypography.caption),
+                  ],
+                ),
+              );
+            }
             return Padding(
               padding: const EdgeInsets.all(24),
               child: Column(

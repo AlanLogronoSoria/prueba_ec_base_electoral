@@ -11,6 +11,7 @@ import '../models/mesa_model.dart';
 
 abstract class RecintoRemoteDatasource {
   Future<List<MesaModel>> getMesas(String recintoId);
+  Future<MesaModel> createMesa(String recintoId, String numeroJrv);
   Future<String> createVeedor(
     String cedula,
     String nombres,
@@ -77,6 +78,28 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
       }).toList();
     } on AppwriteException catch (e) {
       throw ServerException(e.message ?? 'Error al obtener mesas');
+    }
+  }
+
+  @override
+  Future<MesaModel> createMesa(String recintoId, String numeroJrv) async {
+    try {
+      final doc = await databases.createDocument(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.mesasCollectionId,
+        documentId: ID.unique(),
+        data: {
+          'recinto_id': recintoId,
+          'numero_jrv': numeroJrv,
+        },
+        permissions: [
+          Permission.read(Role.any()),
+          Permission.update(Role.any()),
+        ],
+      );
+      return MesaModel.fromMap(doc.data, doc.$id);
+    } on AppwriteException catch (e) {
+      throw ServerException(e.message ?? 'Error al crear mesa');
     }
   }
 

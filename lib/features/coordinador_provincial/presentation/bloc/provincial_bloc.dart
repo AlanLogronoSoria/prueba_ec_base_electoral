@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/usecases/create_coordinador_recinto_usecase.dart';
@@ -76,6 +77,7 @@ class ProvincialBloc extends Bloc<ProvincialEvent, ProvincialState> {
     CreateCoordinadorRecinto event,
     Emitter<ProvincialState> emit,
   ) async {
+    debugPrint('[BLOC:prov] EVENT: CreateCoordinadorRecinto cedula=${event.cedula}');
     emit(const ProvincialLoading());
     final result = await createCoordinadorRecintoUseCase(
       CreateCoordinadorRecintoParams(
@@ -88,6 +90,7 @@ class ProvincialBloc extends Bloc<ProvincialEvent, ProvincialState> {
         creadoPor: event.creadoPor,
       ),
     );
+    debugPrint('[BLOC:prov] Usecase result: ${result.isRight() ? "SUCCESS" : "FAILURE"}');
     result.fold(
       (failure) => emit(ProvincialError(message: failure.message)),
       (_) => emit(const CoordinadorRecintoCreated()),

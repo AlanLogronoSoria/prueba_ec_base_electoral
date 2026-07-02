@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/appwrite/appwrite_client.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
@@ -158,6 +160,8 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
       }
 
       final functionId = AppwriteConstants.createUserFunctionId;
+      debugPrint('[DS:prov] === CREATE COORDINADOR START ===');
+      debugPrint('[DS:prov] Cedula: $cedula, Correo: $correo');
       if (functionId.isEmpty) {
         throw ServerException('Función de creación de usuarios no configurada');
       }
@@ -175,18 +179,29 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
         }),
       );
 
-      final responseBody = execution.responseBody;
-      if (responseBody.isEmpty) {
-        throw ServerException('Respuesta vacía de la función');
+      debugPrint('[DS:prov] Execution ID: ${execution.$id}');
+
+      await AppwriteClient.instance
+          .waitForExecution(functionId, execution.$id);
+
+      debugPrint('[DS:prov] Function completed, searching user by cedula: $cedula');
+
+      final docs = await databases.listDocuments(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.usuariosCollectionId,
+        queries: [Query.equal('cedula', cedula)],
+      );
+
+      debugPrint('[DS:prov] Search result count: ${docs.documents.length}');
+
+      if (docs.documents.isEmpty) {
+        debugPrint('[DS:prov] ERROR: Usuario no encontrado');
+        throw ServerException('Usuario no encontrado tras creacion');
       }
 
-      final result = jsonDecode(responseBody) as Map<String, dynamic>;
-      if (result['ok'] != true) {
-        throw ServerException(
-            result['message'] as String? ?? 'Error al crear usuario');
-      }
+      final userId = docs.documents.first.$id;
 
-      final userId = result['userId'] as String;
+      debugPrint('[DS:prov] === SUCCESS === userId=$userId');
 
       await databases.updateDocument(
         databaseId: AppwriteConstants.databaseId,
@@ -195,8 +210,10 @@ class ProvincialRemoteDatasourceImpl implements ProvincialRemoteDatasource {
         data: {'coordinador_recinto_id': userId},
       );
     } on ServerException {
+      debugPrint('[DS:prov] SERVER EXCEPTION rethrow');
       rethrow;
     } on AppwriteException catch (e) {
+      debugPrint('[DS:prov] APPWRITE ERROR: ${e.message} | code=${e.code}');
       throw ServerException(
         e.message ?? 'Error al crear coordinador de recinto',
       );

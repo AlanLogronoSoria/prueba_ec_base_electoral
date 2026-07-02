@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
@@ -11,6 +12,7 @@ class CreateVeedorUseCase implements UseCase<String, CreateVeedorParams> {
 
   @override
   Future<Either<Failure, String>> call(CreateVeedorParams params) {
+    debugPrint('[UC:veedor] cedula=${params.cedula} mesaId=${params.mesaId}');
     return repository.createVeedor(
       params.cedula,
       params.nombres,

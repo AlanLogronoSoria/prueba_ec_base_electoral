@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/appwrite/appwrite_client.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
@@ -90,6 +92,8 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
   ) async {
     try {
       final functionId = AppwriteConstants.createUserFunctionId;
+      debugPrint('[DS:rec] === CREATE VEEDOR START ===');
+      debugPrint('[DS:rec] Cedula: $cedula, Correo: $correo');
       if (functionId.isEmpty) {
         throw ServerException('Función de creación de usuarios no configurada');
       }
@@ -106,18 +110,29 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
         }),
       );
 
-      final responseBody = execution.responseBody;
-      if (responseBody.isEmpty) {
-        throw ServerException('Respuesta vacía de la función');
+      debugPrint('[DS:rec] Execution ID: ${execution.$id}');
+
+      await AppwriteClient.instance
+          .waitForExecution(functionId, execution.$id);
+
+      debugPrint('[DS:rec] Function completed, searching user by cedula: $cedula');
+
+      final docs = await databases.listDocuments(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.usuariosCollectionId,
+        queries: [Query.equal('cedula', cedula)],
+      );
+
+      debugPrint('[DS:rec] Search result count: ${docs.documents.length}');
+
+      if (docs.documents.isEmpty) {
+        debugPrint('[DS:rec] ERROR: Usuario no encontrado');
+        throw ServerException('Usuario no encontrado tras creacion');
       }
 
-      final result = jsonDecode(responseBody) as Map<String, dynamic>;
-      if (result['ok'] != true) {
-        throw ServerException(
-            result['message'] as String? ?? 'Error al crear veedor');
-      }
+      final veedorId = docs.documents.first.$id;
 
-      final veedorId = result['userId'] as String;
+      debugPrint('[DS:rec] === SUCCESS === veedorId=$veedorId');
 
       if (mesaId != null) {
         await databases.updateDocument(
@@ -129,7 +144,11 @@ class RecintoRemoteDatasourceImpl implements RecintoRemoteDatasource {
       }
 
       return veedorId;
+    } on ServerException {
+      debugPrint('[DS:rec] SERVER EXCEPTION rethrow');
+      rethrow;
     } on AppwriteException catch (e) {
+      debugPrint('[DS:rec] APPWRITE ERROR: ${e.message} | code=${e.code}');
       throw ServerException(e.message ?? 'Error al crear veedor');
     }
   }

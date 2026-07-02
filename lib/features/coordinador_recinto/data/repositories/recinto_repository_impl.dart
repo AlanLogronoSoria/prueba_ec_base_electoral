@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
@@ -35,6 +36,7 @@ class RecintoRepositoryImpl implements RecintoRepository {
     String? mesaId,
   ) async {
     try {
+      debugPrint('[REPO:rec] createVeedor cedula=$cedula');
       final veedorId = await remoteDatasource.createVeedor(
         cedula,
         nombres,
@@ -44,6 +46,7 @@ class RecintoRepositoryImpl implements RecintoRepository {
         creadoPor,
         mesaId,
       );
+      debugPrint('[REPO:rec] SUCCESS veedorId=$veedorId');
       return Right(veedorId);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

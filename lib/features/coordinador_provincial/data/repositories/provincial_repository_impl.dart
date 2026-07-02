@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
@@ -64,6 +65,7 @@ class ProvincialRepositoryImpl implements ProvincialRepository {
     String creadoPor,
   ) async {
     try {
+      debugPrint('[REPO:prov] createCoordinadorRecinto cedula=$cedula');
       await remoteDatasource.createCoordinadorRecinto(
         recintoId,
         cedula,
@@ -73,6 +75,7 @@ class ProvincialRepositoryImpl implements ProvincialRepository {
         correo,
         creadoPor,
       );
+      debugPrint('[REPO:prov] SUCCESS');
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

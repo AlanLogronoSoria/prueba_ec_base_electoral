@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/usecases/asignar_veedor_usecase.dart';
@@ -58,6 +59,7 @@ class RecintoBloc extends Bloc<RecintoEvent, RecintoState> {
     CreateVeedor event,
     Emitter<RecintoState> emit,
   ) async {
+    debugPrint('[BLOC:rec] EVENT: CreateVeedor cedula=${event.cedula}');
     emit(const RecintoLoading());
     final result = await createVeedorUseCase(
       CreateVeedorParams(
@@ -70,6 +72,7 @@ class RecintoBloc extends Bloc<RecintoEvent, RecintoState> {
         mesaId: event.mesaId,
       ),
     );
+    debugPrint('[BLOC:rec] Usecase result: ${result.isRight() ? "SUCCESS" : "FAILURE"}');
     result.fold(
       (failure) => emit(RecintoError(message: failure.message)),
       (_) => emit(const VeedorCreated()),

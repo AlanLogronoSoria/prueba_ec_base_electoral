@@ -23,4 +23,19 @@ class AppwriteClient {
     storage = Storage(_client);
     functions = Functions(_client);
   }
+
+  Future<void> waitForExecution(String functionId, String executionId) async {
+    dynamic exec;
+    for (int i = 0; i < 30; i++) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      exec = await functions.getExecution(
+        functionId: functionId,
+        executionId: executionId,
+      );
+      final status = exec.status?.toString() ?? '';
+      if (status == 'completed') return;
+      if (status == 'failed') throw Exception('La funcion fallo');
+    }
+    throw Exception('Timeout esperando la funcion');
+  }
 }

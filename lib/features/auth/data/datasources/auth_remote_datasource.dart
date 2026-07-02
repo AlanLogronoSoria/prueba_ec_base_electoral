@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/appwrite/appwrite_client.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/error/exceptions.dart';
@@ -30,10 +31,12 @@ abstract class AuthRemoteDatasource {
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
   final Account account;
   final Databases databases;
+  final Functions functions;
 
   AuthRemoteDatasourceImpl({
     required this.account,
     required this.databases,
+    required this.functions,
   });
 
   @override
@@ -165,71 +168,65 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     String? recintoId,
   }) async {
     try {
-      final authUser = await account.create(
-        userId: ID.unique(),
-        email: correo,
-        password: AppConstants.defaultPassword,
-        name: '$nombres $apellidos',
+      final functionId = AppwriteConstants.createUserFunctionId;
+      debugPrint('[DS:auth] === CREATE USER START ===');
+      debugPrint('[DS:auth] Function ID: $functionId');
+      if (functionId.isEmpty) {
+        throw ServerException(
+          'Función de creación de usuarios no configurada. '
+          'Configura APPWRITE_CREATE_USER_FUNCTION_ID en .env',
+        );
+      }
+
+      final body = <String, dynamic>{
+        'cedula': cedula,
+        'nombres': nombres,
+        'apellidos': apellidos,
+        'telefono': telefono,
+        'correo': correo,
+        'rol': rol,
+      };
+      if (recintoId != null) body['recintoId'] = recintoId;
+
+      debugPrint('[DS:auth] Payload: ${jsonEncode(body)}');
+
+      final execution = await functions.createExecution(
+        functionId: functionId,
+        body: jsonEncode(body),
       );
 
-      final userId = authUser.$id;
+      debugPrint('[DS:auth] Execution ID: ${execution.$id}');
 
-      try {
-        final userDoc = await databases.createDocument(
-          databaseId: AppwriteConstants.databaseId,
-          collectionId: AppwriteConstants.usuariosCollectionId,
-          documentId: userId,
-          data: {
-            'cedula': cedula,
-            'nombres': nombres,
-            'apellidos': apellidos,
-            'telefono': telefono,
-            'correo': correo,
-            'rol': rol,
-            'primer_login': true,
-            if (recintoId != null) 'recinto_id': recintoId,
-            'creado_por': creadoPor,
-          },
-          permissions: [
-            Permission.read(Role.user(userId)),
-            Permission.update(Role.user(userId)),
-          ],
-        );
+      await AppwriteClient.instance
+          .waitForExecution(functionId, execution.$id);
 
-        // Enviar verificación de correo (excepto para usuarios seed)
-        if (!correo.startsWith('seed_') && !correo.startsWith('admin_')) {
-          try {
-            await account.createVerification(
-              url: '${AppwriteConstants.recoveryBaseUrl}/verificar',
-            );
-          } catch (_) {}
-        }
+      debugPrint('[DS:auth] Function completed, searching user by cedula: $cedula');
 
-        return UsuarioModel.fromMap(userDoc.data, userDoc.$id);
-      } catch (e) {
-        // Rollback: eliminar usuario de Auth si falla la creación del documento
-        await _eliminarAuthUser(userId);
-        rethrow;
+      final docs = await databases.listDocuments(
+        databaseId: AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.usuariosCollectionId,
+        queries: [Query.equal('cedula', cedula)],
+      );
+
+      debugPrint('[DS:auth] Search result count: ${docs.documents.length}');
+
+      if (docs.documents.isEmpty) {
+        debugPrint('[DS:auth] ERROR: Usuario no encontrado tras creacion');
+        throw ServerException('Usuario no encontrado tras creacion');
       }
+
+      final userDoc = docs.documents.first;
+
+      debugPrint('[DS:auth] === CREATE USER SUCCESS === userId=${userDoc.$id}');
+
+      return UsuarioModel.fromMap(userDoc.data, userDoc.$id);
+    } on ServerException {
+      debugPrint('[DS:auth] SERVER EXCEPTION rethrow');
+      rethrow;
     } on AppwriteException catch (e) {
+      debugPrint('[DS:auth] APPWRITE ERROR: ${e.message} | code=${e.code}');
       throw ServerException(e.message ?? 'Error al crear usuario');
     }
-  }
-
-  Future<void> _eliminarAuthUser(String userId) async {
-    final key = AppwriteConstants.adminKey;
-    if (key.isEmpty) return;
-    try {
-      final client = HttpClient();
-      final request = await client.deleteUrl(
-        Uri.parse('${AppwriteConstants.endpoint}/users/$userId'),
-      );
-      request.headers.set('X-Appwrite-Project', AppwriteConstants.projectId);
-      request.headers.set('X-Appwrite-Key', key);
-      request.headers.set('Content-Type', 'application/json');
-      await request.close();
-      client.close();
-    } catch (_) {}
   }
 
   @override

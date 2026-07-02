@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failure.dart';
@@ -12,6 +13,7 @@ class CreateCoordinadorRecintoUseCase
 
   @override
   Future<Either<Failure, Null>> call(CreateCoordinadorRecintoParams params) {
+    debugPrint('[UC:coord] cedula=${params.cedula} recintoId=${params.recintoId}');
     return repository.createCoordinadorRecinto(
       params.recintoId,
       params.cedula,

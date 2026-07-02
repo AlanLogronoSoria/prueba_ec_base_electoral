@@ -84,6 +84,7 @@ Future<void> init() async {
       () => AuthRemoteDatasourceImpl(
             account: sl(),
             databases: sl(),
+            functions: sl(),
           ));
 
   // Provincial Feature

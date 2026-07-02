@@ -1,0 +1,47 @@
+name: control_electoral_2026
+description: "App para gestionar el escrutinio electoral en Ecuador."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  appwrite: ^13.0.0
+  get_it: ^7.7.0
+  go_router: ^14.0.0
+  dartz: ^0.10.1
+  equatable: ^2.0.5
+  image: ^4.1.7
+  geolocator: ^12.0.0
+  camera: ^0.11.0
+  permission_handler: ^11.3.1
+  cached_network_image: ^3.3.1
+  uuid: ^4.4.0
+  image_picker: ^1.0.7
+  flutter_dotenv: ^5.1.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  connectivity_plus: ^6.0.0
+  path_provider: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.4
+  flutter_lints: ^6.0.0
+
+dependency_overrides:
+  flutter_web_auth_2: ^5.0.3
+  flutter_web_auth_2_platform_interface: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env

@@ -48,7 +48,7 @@ class _RecintosListPageState extends State<RecintosListPage> {
           }
           if (state is RecintosLoaded) {
             if (state.recintos.isEmpty) {
-              return const Center(
+              return Center(
                 child: Text('No hay recintos registrados', style: AppTypography.bodyMedium),
               );
             }

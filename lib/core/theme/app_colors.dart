@@ -3,38 +3,41 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const primary = Color(0xFF1A56DB);
-  static const primaryLight = Color(0xFF3B82F6);
-  static const primaryDark = Color(0xFF1E40AF);
+  static const primary = Color(0xFF042C5C);
+  static const primaryLight = Color(0xFF0A4A8A);
+  static const primaryDark = Color(0xFF021D3D);
 
-  static const secondary = Color(0xFF06B6D4);
-  static const secondaryLight = Color(0xFF22D3EE);
+  static const secondary = Color(0xFFBC0009);
+  static const secondaryLight = Color(0xFFE53935);
 
-  static const accent = Color(0xFF8B5CF6);
+  static const accent = Color(0xFF1E88E5);
 
-  static const success = Color(0xFF10B981);
-  static const successLight = Color(0xFFD1FAE5);
+  static const success = Color(0xFF2E7D32);
+  static const successLight = Color(0xFF1B5E20);
 
-  static const warning = Color(0xFFF59E0B);
-  static const warningLight = Color(0xFFFEF3C7);
+  static const warning = Color(0xFFED6C02);
+  static const warningLight = Color(0xFF663C00);
 
-  static const error = Color(0xFFEF4444);
-  static const errorLight = Color(0xFFFEE2E2);
+  static const error = Color(0xFFD32F2F);
+  static const errorLight = Color(0xFF611A15);
 
-  static const info = Color(0xFF3B82F6);
+  static const info = Color(0xFF1E88E5);
 
-  static const background = Color(0xFFF8FAFC);
-  static const surface = Color(0xFFFFFFFF);
-  static const surfaceVariant = Color(0xFFF1F5F9);
+  static const background = Color(0xFF042C5C);
+  static const surface = Color(0xFF0A3D6E);
+  static const surfaceVariant = Color(0xFF0D4F8A);
 
-  static const textPrimary = Color(0xFF0F172A);
-  static const textSecondary = Color(0xFF475569);
-  static const textTertiary = Color(0xFF94A3B8);
-  static const textInverse = Color(0xFFFFFFFF);
+  static const textPrimary = Color(0xFFFFFFFF);
+  static const textSecondary = Color(0xFFB0C4DE);
+  static const textTertiary = Color(0xFF7090B0);
+  static const textInverse = Color(0xFF042C5C);
 
-  static const border = Color(0xFFE2E8F0);
-  static const borderFocus = Color(0xFF3B82F6);
+  static const border = Color(0xFF1A5A9A);
+  static const borderFocus = Color(0xFF5B9BD5);
 
-  static const shimmer = Color(0xFFCBD5E1);
-  static const overlay = Color(0x33000000);
+  static const shimmer = Color(0xFF1A5A9A);
+  static const overlay = Color(0x66000000);
+
+  static const glass = Color(0x0DFFFFFF);
+  static const glassBorder = Color(0x1AFFFFFF);
 }

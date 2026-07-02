@@ -1,110 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTypography {
   AppTypography._();
 
-  static const _baseFamily = 'Inter';
+  static TextStyle plusJakarta({
+    double fontSize = 14,
+    FontWeight fontWeight = FontWeight.w400,
+    Color color = AppColors.textPrimary,
+    double? letterSpacing,
+    double height = 1.5,
+  }) {
+    return GoogleFonts.plusJakartaSans(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
 
-  static const TextStyle displayLarge = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-    letterSpacing: -0.5,
-  );
-
-  static const TextStyle displayMedium = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle headingLarge = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 20,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle headingMedium = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle headingSmall = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle bodyLarge = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
-    height: 1.5,
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
-    height: 1.5,
-  );
-
-  static const TextStyle bodySmall = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    height: 1.4,
-  );
-
-  static const TextStyle labelLarge = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle labelMedium = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textSecondary,
-  );
-
-  static const TextStyle buttonLarge = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textInverse,
-  );
-
-  static const TextStyle statValue = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 28,
-    fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle statLabel = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
-  );
-
-  static const TextStyle caption = TextStyle(
-    fontFamily: _baseFamily,
-    fontSize: 11,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textTertiary,
-  );
+  static final TextStyle displayLarge = plusJakarta(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.5);
+  static final TextStyle displayMedium = plusJakarta(fontSize: 24, fontWeight: FontWeight.w700);
+  static final TextStyle headingLarge = plusJakarta(fontSize: 20, fontWeight: FontWeight.w700);
+  static final TextStyle headingMedium = plusJakarta(fontSize: 18, fontWeight: FontWeight.w600);
+  static final TextStyle headingSmall = plusJakarta(fontSize: 16, fontWeight: FontWeight.w600);
+  static final TextStyle bodyLarge = plusJakarta(fontSize: 16, fontWeight: FontWeight.w400);
+  static final TextStyle bodyMedium = plusJakarta(fontSize: 14, fontWeight: FontWeight.w400);
+  static final TextStyle bodySmall = plusJakarta(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.textSecondary);
+  static final TextStyle labelLarge = plusJakarta(fontSize: 14, fontWeight: FontWeight.w600);
+  static final TextStyle labelMedium = plusJakarta(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary);
+  static final TextStyle buttonLarge = plusJakarta(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textInverse);
+  static final TextStyle statValue = plusJakarta(fontSize: 28, fontWeight: FontWeight.w700);
+  static final TextStyle statLabel = plusJakarta(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondary);
+  static final TextStyle caption = plusJakarta(fontSize: 11, fontWeight: FontWeight.w400, color: AppColors.textTertiary);
 }

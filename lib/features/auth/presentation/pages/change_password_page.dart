@@ -87,13 +87,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                                 color: AppColors.warning,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'Cambio de Contraseña',
                               textAlign: TextAlign.center,
                               style: AppTypography.displayMedium,
                             ),
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'Por seguridad, debes cambiar tu contraseña inicial.',
                               textAlign: TextAlign.center,
                               style: AppTypography.bodySmall,

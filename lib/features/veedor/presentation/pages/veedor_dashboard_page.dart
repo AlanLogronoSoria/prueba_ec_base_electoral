@@ -165,7 +165,7 @@ class VeedorDashboardPage extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 20),
-                  const Text('Acciones', style: AppTypography.labelMedium),
+                  Text('Acciones', style: AppTypography.labelMedium),
                   const SizedBox(height: 8),
                   DashboardCard(
                     icon: Icons.table_chart_rounded,

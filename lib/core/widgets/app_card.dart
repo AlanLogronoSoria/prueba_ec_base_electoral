@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -9,6 +10,7 @@ class AppCard extends StatelessWidget {
   final Color? backgroundColor;
   final VoidCallback? onTap;
   final List<BoxShadow>? shadows;
+  final bool glass;
 
   const AppCard({
     super.key,
@@ -17,33 +19,44 @@ class AppCard extends StatelessWidget {
     this.backgroundColor,
     this.onTap,
     this.shadows,
+    this.glass = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      padding: padding ?? AppSpacing.cardPadding,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 0.5),
-        boxShadow: shadows ??
-            [
-              const BoxShadow(
-                color: Color(0x04000000),
-                blurRadius: 4,
-                offset: Offset(0, 1),
-              ),
-            ],
+    final card = ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: glass ? 12 : 0, sigmaY: glass ? 12 : 0),
+        child: Container(
+          padding: padding ?? AppSpacing.cardPadding,
+          decoration: BoxDecoration(
+            color: backgroundColor ?? AppColors.glass,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.glassBorder, width: 0.5),
+            boxShadow: shadows ??
+                [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(20),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+          ),
+          child: child,
+        ),
       ),
-      child: child,
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: card,
+      return Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: card,
+        ),
       );
     }
 
@@ -78,8 +91,8 @@ class DashboardCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: iconColor.withAlpha(25),
-              borderRadius: BorderRadius.circular(12),
+              color: iconColor.withAlpha(40),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: iconColor, size: 24),
           ),
@@ -128,8 +141,8 @@ class StatCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
+                color: color.withAlpha(40),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 22),
             ),

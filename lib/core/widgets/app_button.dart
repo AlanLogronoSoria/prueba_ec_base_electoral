@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_typography.dart';
 
 class AppButton extends StatelessWidget {
   final String label;
@@ -27,17 +25,16 @@ class AppButton extends StatelessWidget {
       return OutlinedButton.icon(
         onPressed: onPressed,
         icon: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
             : icon != null
                 ? Icon(icon, size: 20)
                 : null,
         label: Text(label),
         style: isDanger
-            ? OutlinedButton.styleFrom(foregroundColor: AppColors.error)
+            ? OutlinedButton.styleFrom(
+                foregroundColor: AppColors.error,
+                side: const BorderSide(color: AppColors.error),
+              )
             : null,
       );
     }
@@ -45,47 +42,14 @@ class AppButton extends StatelessWidget {
     return FilledButton.icon(
       onPressed: onPressed,
       icon: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.textInverse,
-              ),
-            )
+          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
           : icon != null
               ? Icon(icon, size: 20)
               : null,
       label: Text(label),
       style: isDanger
-          ? FilledButton.styleFrom(backgroundColor: AppColors.error)
+          ? FilledButton.styleFrom(backgroundColor: AppColors.secondary)
           : null,
-    );
-  }
-}
-
-class AppIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onPressed;
-  final String tooltip;
-
-  const AppIconButton({
-    super.key,
-    required this.icon,
-    this.onPressed,
-    required this.tooltip,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 20, color: AppColors.textSecondary),
-      tooltip: tooltip,
-      style: IconButton.styleFrom(
-        backgroundColor: AppColors.surfaceVariant,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
     );
   }
 }

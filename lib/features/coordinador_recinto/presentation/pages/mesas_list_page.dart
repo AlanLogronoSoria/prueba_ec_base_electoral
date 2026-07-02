@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../bloc/recinto_bloc.dart';
 import '../bloc/recinto_event.dart';
 import '../bloc/recinto_state.dart';
@@ -90,7 +91,7 @@ class _MesasListPageState extends State<MesasListPage> {
           }
           if (state is MesasLoaded) {
             if (state.mesas.isEmpty) {
-              return const Center(child: Text('No hay mesas registradas en este recinto', style: AppTypography.bodyMedium));
+              return Center(child: Text('No hay mesas registradas en este recinto', style: AppTypography.bodyMedium));
             }
             return RefreshIndicator(
               onRefresh: () async {
@@ -117,10 +118,9 @@ class _MesasListPageState extends State<MesasListPage> {
                         ),
                       ),
                       title: Text('JRV ${mesa.numeroJrv}', style: AppTypography.labelLarge),
-                      subtitle: Text(
-                        mesa.hasActa ? 'Con acta registrada' : 'Sin acta registrada',
-                        style: TextStyle(color: mesa.hasActa ? AppColors.success : AppColors.warning, fontSize: 12),
-                      ),
+                      subtitle: mesa.hasActa
+                          ? StatusBadge.completed(label: 'Con acta')
+                          : StatusBadge.pending(label: 'Sin acta'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

@@ -110,13 +110,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                               color: AppColors.success,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Nueva Contraseña',
                             textAlign: TextAlign.center,
                             style: AppTypography.displayMedium,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Ingresa tu nueva contraseña.',
                             textAlign: TextAlign.center,
                             style: AppTypography.bodySmall,

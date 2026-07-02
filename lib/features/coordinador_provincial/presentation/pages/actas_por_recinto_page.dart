@@ -51,7 +51,7 @@ class _ActasPorRecintoPageState extends State<ActasPorRecintoPage> {
           }
           if (state is ActasPorRecintoLoaded) {
             if (state.actas.isEmpty) {
-              return const Center(child: Text('No hay actas registradas en este recinto', style: AppTypography.bodyMedium));
+              return Center(child: Text('No hay actas registradas en este recinto', style: AppTypography.bodyMedium));
             }
             return RefreshIndicator(
               onRefresh: () async {

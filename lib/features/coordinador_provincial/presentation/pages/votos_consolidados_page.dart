@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -47,7 +48,7 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
           }
           if (state is VotosConsolidadosLoaded) {
             if (state.votos.isEmpty) {
-              return const Center(child: Text('No hay votos registrados', style: AppTypography.bodyMedium));
+              return Center(child: Text('No hay votos registrados', style: AppTypography.bodyMedium));
             }
             return RefreshIndicator(
               onRefresh: () async {
@@ -58,6 +59,9 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
                 itemCount: state.votos.length,
                 itemBuilder: (context, index) {
                   final grupo = state.votos[index];
+                  final maxVotos = grupo.resultados
+                      .fold<int>(0, (max, r) => r.totalVotos > max ? r.totalVotos : max)
+                      .toDouble();
                   return AppCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -75,43 +79,76 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
                               child: const Icon(Icons.how_to_vote_rounded, color: AppColors.primary, size: 20),
                             ),
                             const SizedBox(width: 12),
-                            Text(grupo.dignidad.toUpperCase(), style: AppTypography.headingMedium.copyWith(color: AppColors.primary)),
+                            Text(grupo.dignidad.toUpperCase(),
+                                style: AppTypography.headingMedium.copyWith(color: AppColors.primary)),
                           ],
                         ),
-                        const Divider(height: 24),
-                        ...grupo.resultados.map((r) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(r.nombreOrganizacion, style: AppTypography.labelLarge),
-                                        if (r.candidato.isNotEmpty)
-                                          Text(r.candidato, style: AppTypography.caption),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withAlpha(15),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      r.totalVotos.toString(),
-                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primary),
-                                    ),
-                                  ),
-                                ],
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: grupo.resultados.length * 44.0,
+                          child: BarChart(
+                            BarChartData(
+                              alignment: BarChartAlignment.center,
+                              maxY: maxVotos * 1.2,
+                              barTouchData: BarTouchData(
+                                touchTooltipData: BarTouchTooltipData(
+                                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                    return BarTooltipItem(
+                                      '${rod.toY.toInt()} votos',
+                                      const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                    );
+                                  },
+                                ),
                               ),
-                            )),
-                        const Divider(height: 16),
+                              titlesData: FlTitlesData(
+                                show: true,
+                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    getTitlesWidget: (value, meta) {
+                                      final idx = value.toInt();
+                                      if (idx < 0 || idx >= grupo.resultados.length) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      final nombre = grupo.resultados[idx].nombreOrganizacion;
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 6),
+                                        child: Text(
+                                          nombre.length > 12 ? '${nombre.substring(0, 10)}...' : nombre,
+                                          style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              gridData: const FlGridData(show: false),
+                              borderData: FlBorderData(show: false),
+                              barGroups: grupo.resultados.asMap().entries.map((entry) {
+                                final colorIndex = entry.key % _barColors.length;
+                                return BarChartGroupData(
+                                  x: entry.key,
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: entry.value.totalVotos.toDouble(),
+                                      color: _barColors[colorIndex],
+                                      width: 24,
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total', style: AppTypography.headingSmall),
+                            Text('Total', style: AppTypography.headingSmall),
                             Text(
                               grupo.resultados.fold<int>(0, (sum, r) => sum + r.totalVotos).toString(),
                               style: AppTypography.headingSmall,
@@ -131,3 +168,16 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage> {
     );
   }
 }
+
+const _barColors = [
+  Color(0xFF0D47A1),
+  Color(0xFF1976D2),
+  Color(0xFF42A5F5),
+  Color(0xFF90CAF9),
+  Color(0xFF1565C0),
+  Color(0xFF2196F3),
+  Color(0xFF64B5F6),
+  Color(0xFFBBDEFB),
+  Color(0xFF1E88E5),
+  Color(0xFF0D47A1),
+];

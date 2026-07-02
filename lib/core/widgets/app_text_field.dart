@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
 
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -39,13 +38,33 @@ class AppTextField extends StatelessWidget {
         validator: validator,
         readOnly: readOnly,
         maxLines: maxLines ?? 1,
+        style: const TextStyle(color: AppColors.textPrimary),
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
+          filled: true,
+          fillColor: AppColors.glass,
           prefixIcon: prefixIcon != null
               ? Icon(prefixIcon, size: 20, color: AppColors.textTertiary)
               : null,
           suffixIcon: suffix,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.glassBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.glassBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.borderFocus, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error),
+          ),
         ),
       ),
     );
@@ -76,11 +95,23 @@ class AppDropdown<T> extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<T>(
         value: value,
+        style: const TextStyle(color: AppColors.textPrimary),
         decoration: InputDecoration(
           labelText: label,
+          filled: true,
+          fillColor: AppColors.glass,
           prefixIcon: prefixIcon != null
               ? Icon(prefixIcon, size: 20, color: AppColors.textTertiary)
               : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.glassBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.glassBorder),
+          ),
         ),
         items: items,
         onChanged: onChanged,

@@ -93,7 +93,7 @@ class _FotoActaPageState extends State<FotoActaPage> {
                 const SnackBar(content: Text('Foto subida exitosamente'), backgroundColor: Colors.green),
               );
             }
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            Navigator.of(context).pop();
           }
           if (state is VeedorError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -120,13 +120,13 @@ class _FotoActaPageState extends State<FotoActaPage> {
                       ),
                       child: const Icon(Icons.camera_alt_rounded, size: 32, color: AppColors.primary),
                     ),
-                    const Text(
+                    Text(
                       'Toma una foto del acta',
                       textAlign: TextAlign.center,
                       style: AppTypography.headingMedium,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'La foto debe ser nítida y legible.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodySmall,

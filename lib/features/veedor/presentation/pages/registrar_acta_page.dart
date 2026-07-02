@@ -312,7 +312,7 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
                         ),
                         const SizedBox(height: 24),
                         if (_organizaciones.isNotEmpty) ...[
-                          const Text('Votos por Organización', style: AppTypography.headingSmall),
+                          Text('Votos por Organización', style: AppTypography.headingSmall),
                           const SizedBox(height: 8),
                           ..._organizaciones.map((org) {
                             final id = org['id'] as String;

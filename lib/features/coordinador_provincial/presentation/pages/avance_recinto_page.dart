@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -60,22 +61,34 @@ class _AvanceRecintoPageState extends State<AvanceRecintoPage> {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        const Text('Avance del Recinto', style: AppTypography.headingMedium),
+                        Text('Avance del Recinto', style: AppTypography.headingMedium),
                         const SizedBox(height: 24),
                         SizedBox(
-                          width: 150,
-                          height: 150,
+                          width: 160,
+                          height: 160,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              SizedBox(
-                                width: 150,
-                                height: 150,
-                                child: CircularProgressIndicator(
-                                  value: porcentaje / 100,
-                                  strokeWidth: 12,
-                                  color: AppColors.primary,
-                                  backgroundColor: AppColors.surfaceVariant,
+                              PieChart(
+                                PieChartData(
+                                  sectionsSpace: 4,
+                                  centerSpaceRadius: 55,
+                                  sections: [
+                                    PieChartSectionData(
+                                      value: porcentaje,
+                                      color: porcentaje >= 100
+                                          ? AppColors.success
+                                          : AppColors.primary,
+                                      showTitle: false,
+                                      radius: 8,
+                                    ),
+                                    PieChartSectionData(
+                                      value: 100 - porcentaje,
+                                      color: AppColors.surfaceVariant,
+                                      showTitle: false,
+                                      radius: 4,
+                                    ),
+                                  ],
                                 ),
                               ),
                               Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/widgets/status_badge.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/veedor_bloc.dart';
@@ -99,12 +100,9 @@ class _MisMesasPageState extends State<MisMesasPage> {
                       subtitle: Text(recinto['nombre'] as String),
                       children: [
                         if (actas.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Text(
-                              'Sin actas registradas',
-                              style: TextStyle(color: Colors.grey),
-                            ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: StatusBadge.pending(label: 'Sin actas registradas'),
                           )
                         else
                           ...actas.map(

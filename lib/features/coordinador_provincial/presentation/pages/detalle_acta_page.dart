@@ -60,7 +60,7 @@ class _DetalleActaPageState extends State<DetalleActaPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Información del Acta', style: AppTypography.headingMedium),
+                        Text('Información del Acta', style: AppTypography.headingMedium),
                         const SizedBox(height: 12),
                         _InfoRow(label: 'Mesa JRV', value: detalle.mesaNumero),
                         _InfoRow(label: 'Dignidad', value: acta.dignidad),
@@ -83,7 +83,7 @@ class _DetalleActaPageState extends State<DetalleActaPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Ubicación GPS', style: AppTypography.headingMedium),
+                          Text('Ubicación GPS', style: AppTypography.headingMedium),
                           const SizedBox(height: 12),
                           _InfoRow(label: 'Latitud', value: acta.gpsLatitud!.toStringAsFixed(6)),
                           _InfoRow(label: 'Longitud', value: acta.gpsLongitud!.toStringAsFixed(6)),
@@ -123,7 +123,7 @@ class _DetalleActaPageState extends State<DetalleActaPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Votos por Organización', style: AppTypography.headingMedium),
+                        Text('Votos por Organización', style: AppTypography.headingMedium),
                         const SizedBox(height: 12),
                         ...detalle.votos.map((voto) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),

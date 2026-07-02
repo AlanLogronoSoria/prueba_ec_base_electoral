@@ -94,13 +94,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               color: AppColors.warning,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Recuperar Contraseña',
                             textAlign: TextAlign.center,
                             style: AppTypography.displayMedium,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Ingresa tu cédula para recibir un enlace de recuperación en tu correo registrado.',
                             textAlign: TextAlign.center,
                             style: AppTypography.bodySmall,

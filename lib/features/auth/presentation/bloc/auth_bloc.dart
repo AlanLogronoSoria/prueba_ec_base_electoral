@@ -71,11 +71,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
-    final result = await logoutUseCase(const NoParams());
-    result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(const AuthUnauthenticated()),
-    );
+    await logoutUseCase(const NoParams());
+    emit(const AuthUnauthenticated());
   }
 
   Future<void> _onChangePassword(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/usecases/corregir_acta_veedor_usecase.dart';
@@ -59,6 +60,7 @@ class VeedorBloc extends Bloc<VeedorEvent, VeedorState> {
     RegistrarActa event,
     Emitter<VeedorState> emit,
   ) async {
+    debugPrint('[BLOC:veedor] _onRegistrarActa — mesa=${event.mesaId} dignidad=${event.dignidad}');
     emit(const VeedorLoading());
     final result = await registrarActaUseCase(
       RegistrarActaParams(
@@ -73,6 +75,10 @@ class VeedorBloc extends Bloc<VeedorEvent, VeedorState> {
         votosPorOrganizacion: event.votosPorOrganizacion,
       ),
     );
+    debugPrint('[BLOC:veedor] Usecase result: ${result.isRight() ? "SUCCESS" : "FAILURE"}');
+    if (result.isLeft()) {
+      result.fold((f) => debugPrint('[BLOC:veedor] FAILURE: ${f.message}'), (_) {});
+    }
     result.fold(
       (failure) => emit(VeedorError(message: failure.message)),
       (acta) => emit(ActaRegistrada(acta: acta)),

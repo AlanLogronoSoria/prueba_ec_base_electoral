@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/constants/appwrite_constants.dart';
 import '../../../../core/error/exceptions.dart';
@@ -89,6 +90,7 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
     Map<String, int> votosPorOrganizacion,
   ) async {
     try {
+      debugPrint('[DS:veedor] registrarActa START — mesa=$mesaId dignidad=$dignidad creadoPor=$registradoPor');
       final existingActas = await databases.listDocuments(
         databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.actasCollectionId,
@@ -128,6 +130,7 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
           'gps_lat': gpsLatitud,
           'gps_lng': gpsLongitud,
           'created_by': registradoPor,
+          'estado': 'pendiente',
         },
         permissions: [
           Permission.read(Role.user(registradoPor)),
@@ -156,6 +159,7 @@ class VeedorRemoteDatasourceImpl implements VeedorRemoteDatasource {
 
       return ActaModel.fromMap(doc.data, doc.$id);
     } on AppwriteException catch (e) {
+      debugPrint('[DS:veedor] APPWRITE ERROR: code=${e.code} message=${e.message}');
       throw ServerException(e.message ?? 'Error al registrar acta');
     }
   }

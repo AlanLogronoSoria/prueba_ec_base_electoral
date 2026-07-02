@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -171,6 +172,10 @@ class _RegistrarActaPageState extends State<RegistrarActaPage> {
     if (authState is AuthAuthenticated) {
       registradoPor = authState.usuario.id;
     }
+
+    debugPrint('[UI:registrar] dispatching RegistrarActa — mesa=${_mesaIdController.text} dignidad=$_dignidad creadoPor=$registradoPor');
+    debugPrint('[UI:registrar] orgs count=${_organizaciones.length}');
+    debugPrint('[UI:registrar] GPS — lat=$_gpsLat lng=$_gpsLng');
 
     final votosPorOrganizacion = <String, int>{};
     for (final org in _organizaciones) {

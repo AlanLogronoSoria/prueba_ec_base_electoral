@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
@@ -56,7 +57,8 @@ class VeedorRepositoryImpl implements VeedorRepository {
         votosPorOrganizacion,
       );
       return Right(acta);
-    } on ServerException catch (_) {
+    } on ServerException catch (e) {
+      debugPrint('[REPO:veedor] OFFLINE FALLBACK — motivo: ${e.message}');
       // Offline fallback: save acta locally for later sync
       try {
         final localId = _generateLocalId();

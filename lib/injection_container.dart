@@ -61,7 +61,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AppwriteClient.instance.functions);
 
   // Auth Feature
-  sl.registerFactory(() => AuthBloc(
+  sl.registerLazySingleton(() => AuthBloc(
         loginUseCase: sl(),
         logoutUseCase: sl(),
         changePasswordUseCase: sl(),

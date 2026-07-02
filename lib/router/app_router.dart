@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../features/splash/presentation/pages/splash_page.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/auth/presentation/pages/change_password_page.dart';
@@ -19,10 +20,11 @@ GoRouter createAppRouter(AuthBloc authBloc) {
   final refreshNotifier = _AuthStateNotifier(authBloc);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final authState = context.read<AuthBloc>().state;
+    final isSplash = state.matchedLocation == '/splash';
     final isLoggingIn = state.matchedLocation == '/login';
     final isChangingPassword = state.matchedLocation == '/change-password';
     final isResettingPassword =
@@ -30,6 +32,8 @@ GoRouter createAppRouter(AuthBloc authBloc) {
     final isForgotPassword = state.matchedLocation == '/forgot-password';
 
     if (isResettingPassword || isForgotPassword) return null;
+
+    if (isSplash) return null;
 
     if (authState is AuthUnauthenticated && !isLoggingIn) return '/login';
     if (authState is AuthRequiresPasswordChange && !isChangingPassword) {
@@ -48,6 +52,10 @@ GoRouter createAppRouter(AuthBloc authBloc) {
     return null;
   },
   routes: [
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => const SplashPage(),
+    ),
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginPage(),
